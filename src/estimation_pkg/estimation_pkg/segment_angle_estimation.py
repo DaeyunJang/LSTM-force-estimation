@@ -7,6 +7,8 @@ from rclpy.qos import QoSHistoryPolicy
 from rclpy.qos import QoSReliabilityPolicy
 
 from std_msgs.msg import Float32MultiArray
+from geometry_msgs.msg import Twist
+from rclpy.clock import Clock
 
 from rclpy.executors import MultiThreadedExecutor
 from sensor_msgs.msg import Image
@@ -36,6 +38,11 @@ class SegmentEstimationNode(Node):
     self.current_frame_ROI = None
     self.rbsc = RBSC()
     self.segment_angle = None
+    self.segment_angle_prev = None
+    self.segment_angular_velocity = None
+    self.clock = Clock()
+    self.p_time = None
+
     # self.joint_angle = np.array(0)
     print("============================")
     print(os.getcwd())
@@ -84,6 +91,11 @@ class SegmentEstimationNode(Node):
        "estimated_segment_angle",
        QOS_RKL10V
     )
+    self.segment_angular_velocity_publisher = self.create_publisher(
+       Float32MultiArray,
+       "estimated_segment_angular_velocity",
+       QOS_RKL10V
+    )
 
     
 
@@ -119,21 +131,46 @@ class SegmentEstimationNode(Node):
 
 
   def process(self):
+    
     while rclpy.ok():
-      if self.current_frame_flag:
-        # suc = self.rbsc.postprocess(self.current_frame)
-        suc = self.rbsc.postprocess(self.current_frame_ROI)
-        if suc == None:
-          continue
-        self.joint_angle = self.rbsc.joint_angle  # radian
-        msg = Float32MultiArray()
-        msg.data = self.joint_angle.tolist()
-        self.segment_angle_publisher.publish(msg)
+      try:
+        if self.current_frame_flag:
+          # suc = self.rbsc.postprocess(self.current_frame)
+          suc = self.rbsc.postprocess(self.current_frame_ROI)
+          if suc == None:
+            continue
 
-        self.event.set()
+          c_time = self.get_clock().now()
+          self.segment_angle = self.rbsc.joint_angle  # radian
+          
+          if self.segment_angle is not None and self.p_time is not None:
+            dt = (c_time - self.p_time).nanoseconds * 1e-9 # conversion unit to sec
+            if dt == 0 :
+              continue
+            self.segment_angular_velocity = (self.segment_angle - self.segment_angle_prev) / dt
+          else:
+            self.segment_angular_velocity = np.zeros(self.segment_angle.shape)
+
+          msg = Float32MultiArray()
+          msg.data = self.segment_angle.tolist()
+          self.segment_angle_publisher.publish(msg)
+
+          msg_omega = Float32MultiArray()
+          msg_omega.data = self.segment_angular_velocity.tolist()
+          self.segment_angular_velocity_publisher.publish(msg_omega)
+
+          self.event.set()
+
+          self.segment_angle_prev = self.segment_angle
+          self.p_time = c_time
         # print(f'pub data(joint_angle) : {msg.data}')
       # else:
       #   print(f'frame does not update - flag:{self.current_frame_flag}')
+      except Exception as e:
+        self.get_logger().info(f'process() function exception error : {e}')
+
+      # finally:
+      #   continue
   
   def realtime_show(self):
     self.get_logger().info('Waiting the first curvefit process...')

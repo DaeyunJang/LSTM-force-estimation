@@ -15,7 +15,7 @@
 
 import launch
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, TimerAction
 from launch.actions import ExecuteProcess
 from launch.substitutions import LaunchConfiguration, Command, ThisLaunchFileDir
 from launch_ros.actions import Node
@@ -33,7 +33,7 @@ def generate_launch_description():
 
     rqt_perspective_file_path = os.path.join(estimation_pkg_dir, 'rqt_setting.perspective')
     print(f'rqt_perspective_file_path={rqt_perspective_file_path}')
-    rqt_command = ['rqt', '-p', rqt_perspective_file_path]
+    # rqt_command = ['rqt', '-p', rqt_perspective_file_path]
 
     lstm_model_path = os.path.join(estimation_pkg_dir, 'lstm_model.h5')
     scaler_x_path = os.path.join(estimation_pkg_dir, 'scaler_x.pkl')
@@ -55,15 +55,6 @@ def generate_launch_description():
                 # 'depth_module.profile': '640,480,30',
                 }.items()
         ),
-
-        Node(
-            package='rqt_gui',
-            executable='rqt_gui',
-            name='rqt_gui',
-            arguments=['--perspective-file', rqt_perspective_file_path],
-            output='screen'
-        ),
-
         Node(
             package='estimation_pkg',
             executable='segment_angle_estimator',
@@ -82,5 +73,27 @@ def generate_launch_description():
                 {'scaler_y_path': sclaer_y_path},
             ]
             #prefix='taskset -c 2 3'
-        )
+        ),
+        
+        # Node(
+        #     package='rqt_gui',
+        #     executable='rqt_gui',
+        #     name='rqt_gui',
+        #     arguments=['--perspective-file', rqt_perspective_file_path],
+        #     output='screen'
+        # ),
+
+        # 10초 후 rqt_gui 실행
+        TimerAction(
+            period=5.0,  # 10초 대기
+            actions=[
+                Node(
+                    package='rqt_gui',
+                    executable='rqt_gui',
+                    name='rqt_gui',
+                    arguments=['--perspective-file', rqt_perspective_file_path],
+                    output='screen'
+                )
+            ]
+        ),
     ])
