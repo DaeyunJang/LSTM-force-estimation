@@ -512,7 +512,7 @@ class RBSC:
 
             return frame
         except Exception as e:
-            print(f'draw_arrows() error: {e}')
+            # print(f'draw_arrows() error: {e}')
             return
 
     def plot_save(self, save_dir, image_name):

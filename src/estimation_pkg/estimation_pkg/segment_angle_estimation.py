@@ -78,6 +78,13 @@ class SegmentEstimationNode(Node):
         QOS_RKL1V)
     self.get_logger().info('realsense-camera subscriber is created.')
 
+    self.segment_body_binary_image = Image()
+    self.segment_body_binary_image_publisher = self.create_publisher(
+      Image,
+      'estimated_segment_body_binary_image',
+      QOS_RKL10V
+    )
+
     self.segment_angle_image = Image()
     self.segment_angle_image_publisher = self.create_publisher(
       Image,
@@ -110,16 +117,16 @@ class SegmentEstimationNode(Node):
 
         package_share_directory = get_package_share_directory('estimation_pkg')
         config_path = os.path.join(package_share_directory, config_file)
-        print(f'[segment_angle_estimation.py] config.json PATH: {config_path}')
+        print(f'[segment_angle_estimation.py] config.json PATH: {config_path}', flush=True)
         
-        print(f'Load {config_file}')
-        print(f'===== json list ======')
+        print(f'Load {config_file}', flush=True)
+        print(f'===== json list ======', flush=True)
         with open(config_path, 'r') as f:
             config = json.load(f)
             # print
             for key, value in config.items():
-                print(f'{key} : {value}')
-        print(f'===== json list end ===')
+                print(f'{key} : {value}', flush=True)
+        print(f'===== json list end ===', flush=True)
 
         return config
   
@@ -186,14 +193,15 @@ class SegmentEstimationNode(Node):
           landmark_image = self.rbsc.draw_arrows(self.current_frame_ROI)
           landmark_image_msg = self.br_rgb.cv2_to_imgmsg(landmark_image, 'bgr8')
           self.segment_angle_image_publisher.publish(landmark_image_msg)
-          # cv2.imshow('Real-time Image with Joint Points and Arrows', landmark_image)
 
-          # if cv2.waitKey(1) & 0xFF == ord('q'):
-          #   continue
-
+          segment_body_binary_image = self.rbsc.draw_arrows(self.rbsc.body_image)
+          segment_body_binary_image_msg = self.br_rgb.cv2_to_imgmsg(segment_body_binary_image, 'mono8')
+          self.segment_body_binary_image_publisher.publish(segment_body_binary_image_msg)
+          
         except Exception as e:
-          self.get_logger().info(f'realtime_show() Error : {e}')
-          traceback.print_exc()
+          # self.get_logger().info(f'realtime_show() Error : {e}')
+          # traceback.print_exc()
+          pass
     
     # Cleanup
     cv2.destroyAllWindows()

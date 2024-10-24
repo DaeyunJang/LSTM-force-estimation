@@ -27,7 +27,7 @@ from scipy.optimize import minimize
 from numpy.polynomial import Polynomial
 
 from ament_index_python.packages import get_package_share_directory
-print(f"Current Working Directory : {os.getcwd()}")
+print(f"Current Working Directory : {os.getcwd()}", flush=True)
 
 image_path = '487_1723092780-883211914.png'
 # image_path = '302_1723092774-710305664.png'
@@ -63,16 +63,16 @@ class RBSC:
 
         package_share_directory = get_package_share_directory('estimation_pkg')
         config_path = os.path.join(package_share_directory, config_file)
-        print(f'[postprocess.py] config.json PATH: {config_path}')
+        print(f'[postprocess.py] config.json PATH: {config_path}', flush=True)
         
-        print(f'Load {config_file}')
-        print(f'===== json list ======')
+        print(f'Load {config_file}', flush=True)
+        print(f'===== json list ======', flush=True)
         with open(config_path, 'r') as f:
             config = json.load(f)
             # print
             for key, value in config.items():
-                print(f'{key} : {value}')
-        print(f'===== json list end ===')
+                print(f'{key} : {value}', flush=True)
+        print(f'===== json list end ===', flush=True)
 
         return config
 
@@ -351,6 +351,8 @@ class RBSC:
             self.body_image_origin = (labels == max_label).astype(np.uint8) * 255
             self.body_image = self.smoothing(binary=self.body_image_origin, k_size=15)
 
+            # print(f'{self.image} / {self.image.shape} / {self.image.size} ')
+            # print(f'{self.body_image} / {self.body_image.shape} / {self.body_image.size} ')
             # ========== Find skeleton of backbone ==========
             # perform skeletonization
             self.skeleton = skeletonize(self.body_image, method='lee')
@@ -375,7 +377,7 @@ class RBSC:
 
             self.pixel_to_orthogonal_coordinate(self.longest_backbone_image)
         except Exception as e:
-            print(f'postprocess error : {e}')
+            print(f'postprocess error : {e}', flush=True)
             return
         
         # ========== Curve fitting ==========
@@ -482,7 +484,9 @@ class RBSC:
             a=0
 
         except Exception as e:
-            print(f"Error : {e} \n OptimizeWarning for image: {image_path} - returning last calculated values")
+            print(f"postprocess() error : {e}", flush=True)
+            # print(f"Error : {e} \n OptimizeWarning for image: {image_path} - returning last calculated values", flush=True)
+            pass
 
         finally:
             return self.popt_poly4d, self.popt_poly3d, self.popt_log
@@ -510,7 +514,7 @@ class RBSC:
 
             return frame
         except Exception as e:
-            print(f'draw_arrows() error: {e}')
+            # print(f'draw_arrows() error: {e}', flush=True)
             return
 
     def plot_save(self, save_dir):
@@ -600,7 +604,7 @@ class RBSC:
         # results_0.4mm
         # rads = -np.deg2rad(self.joint_angle_degree)
         rads = self.joint_angle + np.pi/2
-        print(f'rads = {rads}')
+        print(f'rads = {rads}', flush=True)
         arrow_length = 15
         u = np.cos(rads) * arrow_length
         v = np.sin(rads) * arrow_length
@@ -737,7 +741,7 @@ if __name__ == '__main__':
         # print(f'num of sequence = {i}')
     et = time.time()
     sampling_freq = n/(et-st)
-    print(f'total time : {et-st} / freq = {sampling_freq}')
+    print(f'total time : {et-st} / freq = {sampling_freq}', flush=True)
 
     # cv2.imwrite('image_gray.png', rbsc.binary_image)
     # cv2.imwrite('image_gray_body.png', rbsc.body_image)

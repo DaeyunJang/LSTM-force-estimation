@@ -64,14 +64,14 @@ class ExternalForceEstimationNode(Node):
     self.scaler_y_path = self.get_parameter('scaler_y_path').get_parameter_value().string_value
 
 
+    print(f'[external_force_estimation.py] lstm_model.h5 PATH: {model_path}', flush=True)
+    print(f'[external_force_estimation.py] scaler_x.pkl PATH: {scaler_x_path}', flush=True)
+    print(f'[external_force_estimation.py] scaler_y.pkl PATH: {scaler_y_path}', flush=True)
+    print(f'[external_force_estimation.py] lstm_model.h5 PATH: {self.model_path}', flush=True)
+    print(f'[external_force_estimation.py] scaler_x.pkl PATH: {self.scaler_x_path}', flush=True)
+    print(f'[external_force_estimation.py] scaler_y.pkl PATH: {self.scaler_y_path}', flush=True)
 
-    print(f'[external_force_estimation.py] lstm_model.h5 PATH: {model_path}')
-    print(f'[external_force_estimation.py] scaler_x.pkl PATH: {scaler_x_path}')
-    print(f'[external_force_estimation.py] scaler_y.pkl PATH: {scaler_y_path}')
-    print(f'[external_force_estimation.py] lstm_model.h5 PATH: {self.model_path}')
-    print(f'[external_force_estimation.py] scaler_x.pkl PATH: {self.scaler_x_path}')
-    print(f'[external_force_estimation.py] scaler_y.pkl PATH: {self.scaler_y_path}')
-
+    self.declare_parameter('input_output_monitor', False)
     
     self.model = tf.keras.models.load_model(self.model_path)
     # self.model = tf.keras.models.load_model('model/lstm_model.h5')
@@ -96,23 +96,6 @@ class ExternalForceEstimationNode(Node):
             depth=10,
             durability=QoSDurabilityPolicy.VOLATILE
     )
-
-    # self.fts_data_flag = False
-    # self.fts_data = WrenchStamped()
-    # self.fts_subscriber = self.create_subscription(
-    #     WrenchStamped,
-    #     'fts_data',
-    #     self.read_fts_data,
-    #     QOS_RKL1V
-    # )
-    # self.fts_data_offset = WrenchStamped()
-    # self.fts_offset_subscriber = self.create_subscription(
-    #     WrenchStamped,
-    #     'fts_data_offset',
-    #     self.read_fts_data_offset,
-    #     QOS_RKL1V
-    # )
-    # self.get_logger().info('fts_data subscriber is created.')
 
     self.loadcell_data_flag = False
     self.loadcell_data = LoadcellState()
@@ -194,10 +177,11 @@ class ExternalForceEstimationNode(Node):
         # input = np.array([ wl + lc + segment_angle])
         input = np.concatenate((wl, lc, segment_angle))
         input_for_model = input.reshape((1, 12, 1))
-        self.get_logger().info(f'input data: {input_for_model}')
         predicted_normalized = self.model(input_for_model)
         predicted_denormalized = self.scaler_y.inverse_transform(predicted_normalized)
-        self.get_logger().info(f'estimation results: {predicted_denormalized}, size:{predicted_denormalized.size}, shape:{predicted_denormalized.shape} ')
+
+        # self.get_logger().info(f'input data: {input_for_model}')
+        # self.get_logger().info(f'estimation results: {predicted_denormalized}, size:{predicted_denormalized.size}, shape:{predicted_denormalized.shape} ')
 
         self.external_force.x = predicted_denormalized.flatten()[0]
         self.external_force.y = predicted_denormalized.flatten()[1]

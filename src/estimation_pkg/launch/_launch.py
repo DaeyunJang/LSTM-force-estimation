@@ -85,7 +85,7 @@ def generate_launch_description():
 
         # 10초 후 rqt_gui 실행
         TimerAction(
-            period=5.0,  # 10초 대기
+            period=5.0,  # 5초 대기
             actions=[
                 Node(
                     package='rqt_gui',
