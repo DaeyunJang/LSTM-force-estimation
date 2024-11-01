@@ -139,6 +139,7 @@ def process(dir_path, rbsc: RBSC, do_LPF=True, do_curvefit=True):
                 image = cv2.imread(img_path, cv2.IMREAD_COLOR)
                 coef_4d, coef_3d, coef_log = rbsc.postprocess(image)
                 joint_angle = rbsc.joint_angle
+                joint_angle_relative = rbsc.joint_angle_relative
                 if coef_4d is not None:
                     csv_results_poly4d.append((filename, coef_4d))
                     json_results_poly4d.append({'Image Filename': filename, 'Coefficients': coef_4d.tolist()})
@@ -149,8 +150,10 @@ def process(dir_path, rbsc: RBSC, do_LPF=True, do_curvefit=True):
                     csv_results_log.append((filename, coef_log))
                     json_results_log.append({'Image Filename': filename, 'Coefficients': coef_log.tolist()})
 
-                csv_results_joint_angle.append((filename, joint_angle))
-                json_results_joint_angle.append({'Image Filename': filename, 'Joint Angle': joint_angle.tolist()})
+                csv_results_joint_angle.append((filename, joint_angle, joint_angle_relative))
+                json_results_joint_angle.append({'Image Filename': filename,
+                                                 'Joint Angles': joint_angle.tolist(),
+                                                 'Joint Angles Relative': joint_angle_relative.tolist()})
 
                 img_save_path = os.path.join(output_directory_name_body, filename)
                 cv2.imwrite(img_save_path, rbsc.body_image)
@@ -164,7 +167,7 @@ def process(dir_path, rbsc: RBSC, do_LPF=True, do_curvefit=True):
         df0 = pd.DataFrame(csv_results_poly4d, columns=['Image Filename', 'Coefficients'])
         # df1 = pd.DataFrame(csv_results_poly3d, columns=['Image Filename', 'Coefficients'])
         # df2 = pd.DataFrame(csv_results_log, columns=['Image Filename', 'Coefficients'])
-        df3 = pd.DataFrame(csv_results_joint_angle, columns=['Image Filename', 'Joint Angles'])
+        df3 = pd.DataFrame(csv_results_joint_angle, columns=['Image Filename', 'Joint Angles', 'Joint Angles Relative'])
 
         df0.to_csv(result_dir + '/' + 'curve_fit_result-poly4d_' + upper_dir_name + '.csv', index=False)
         # df1.to_csv(result_dir + '/' + 'curve_fit_result-poly3d_' + upper_dir_name + '.csv', index=False)

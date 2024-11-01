@@ -34,16 +34,16 @@ test_curvefit_dataframe = pd.concat([df for df in json_test_dataframes])
 test_data_expanded = pd.concat([test_raw_dataframe, test_curvefit_dataframe], axis=1)
 
 # Curve fitting에서 Joint Angle 배열을 분리
-coeff_size = len(test_data_expanded['Joint Angle'].iloc[0])
+coeff_size = len(test_data_expanded['Joint Angles'].iloc[0])
 # Joint Angle 배열을 개별 열로 변환
-coefficients = np.array(test_data_expanded['Joint Angle'].tolist())
-coefficients_df = pd.DataFrame(coefficients, columns=[f'Joint Angle_{i}' for i in range(coeff_size)])
+coefficients = np.array(test_data_expanded['Joint Angles'].tolist())
+coefficients_df = pd.DataFrame(coefficients, columns=[f'Joint Angles_{i}' for i in range(coeff_size)])
 # 기존 데이터프레임과 Joint Angle 개별 열을 합침
 final_test_df = pd.concat([test_data_expanded.reset_index(drop=True), coefficients_df], axis=1)
 final_test_df.to_csv('out.csv', index=False)
 
 # 입력 데이터 분리
-input_columns = ['wire length #0', 'wire length #1', 'loadcell #0', 'loadcell #1'] + [f'Joint Angle_{i}' for i in range(coeff_size)]
+input_columns = ['wire length #0', 'wire length #1', 'loadcell #0', 'loadcell #1'] + [f'Joint Angles_{i}' for i in range(coeff_size)]
 output_columns = ['fx', 'fy']
 
 x = final_test_df[input_columns].values

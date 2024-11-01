@@ -7,6 +7,7 @@ from rclpy.qos import QoSHistoryPolicy
 from rclpy.qos import QoSReliabilityPolicy
 
 from std_msgs.msg import Float32MultiArray
+from geometry_msgs.msg import Vector3
 from geometry_msgs.msg import Twist
 from rclpy.clock import Clock
 
@@ -39,7 +40,10 @@ class SegmentEstimationNode(Node):
     self.rbsc = RBSC()
     self.segment_angle = None
     self.segment_angle_prev = None
+    self.segment_angle_relative = None
+    self.segment_angle_relative_prev = None
     self.segment_angular_velocity = None
+    self.segment_angular_velocity_relative = None
     self.clock = Clock()
     self.p_time = None
 
@@ -95,12 +99,32 @@ class SegmentEstimationNode(Node):
     ###
     self.segment_angle_publisher = self.create_publisher(
        Float32MultiArray,
-       "estimated_segment_angle",
+       "estimated_segment_angle/absolute",
+       QOS_RKL10V
+    )
+    self.segment_angle_publisher = self.create_publisher(
+       Float32MultiArray,
+       "estimated_segment_angle/relative",
        QOS_RKL10V
     )
     self.segment_angular_velocity_publisher = self.create_publisher(
        Float32MultiArray,
-       "estimated_segment_angular_velocity",
+       "estimated_segment_angular_velocity/absolute",
+       QOS_RKL10V
+    )
+    self.segment_angular_velocity_publisher = self.create_publisher(
+       Float32MultiArray,
+       "estimated_segment_angular_velocity/relative",
+       QOS_RKL10V
+    )
+    self.segment_position_x_publisher = self.create_publisher(
+       Vector3,
+       "estimated_segment_position/x",
+       QOS_RKL10V
+    )
+    self.segment_position_y_publisher = self.create_publisher(
+       Vector3,
+       "estimated_segment_position/y",
        QOS_RKL10V
     )
 
@@ -149,14 +173,17 @@ class SegmentEstimationNode(Node):
 
           c_time = self.get_clock().now()
           self.segment_angle = self.rbsc.joint_angle  # radian
+          self.segment_angle_relative = self.rbsc.joint_angle  # radian
           
           if self.segment_angle is not None and self.p_time is not None:
             dt = (c_time - self.p_time).nanoseconds * 1e-9 # conversion unit to sec
             if dt == 0 :
               continue
             self.segment_angular_velocity = (self.segment_angle - self.segment_angle_prev) / dt
+            self.segment_angular_velocity_relative = (self.segment_angle_relative - self.segment_angle_relative_prev) / dt
           else:
             self.segment_angular_velocity = np.zeros(self.segment_angle.shape)
+            self.segment_angular_velocity_relative = np.zeros(self.segment_angle_relative.shape)
 
           msg = Float32MultiArray()
           msg.data = self.segment_angle.tolist()

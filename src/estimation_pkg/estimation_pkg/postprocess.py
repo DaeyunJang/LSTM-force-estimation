@@ -181,7 +181,7 @@ class RBSC:
 
         return length
 
-    # 주어진 곡선 길이에 대해 끝점을 찾는 함수
+    # 주어진 곡선 길이에 대해 끝점(x1)을 찾는 함수
     def find_x_for_given_length(self, x_start, target_length):
         # 곡선 길이를 계산한 후, 주어진 길이와의 차이를 반환하는 함수 정의
         def length_difference(x_end):
@@ -291,6 +291,7 @@ class RBSC:
         # print(f'total len = {self.curve_length}')
 
         target_len = self.curve_length / float(2 * num_of_segments)
+        
         x1 = self.find_x_for_given_length(self.start_point[0], target_length=target_len)
         self.joint_x[0] = x1
 
@@ -309,6 +310,7 @@ class RBSC:
         self.joint_angle = np.arctan(self.joint_tangents)
         self.joint_angle_degree = np.degrees(self.joint_angle)
 
+        # first(0) joint is unstable compared to another joints
         # 첫번째 segment는 오차가 있어서 점사이의 벡터를 가지고 각도를 따로 정의함
         vector_seg1_to_seg2 = [self.joints_xy[1,0]-self.joints_xy[0,0], self.joints_xy[1,1]-self.joints_xy[0,1]]
         tangent = vector_seg1_to_seg2[1] / vector_seg1_to_seg2[0]
@@ -317,10 +319,21 @@ class RBSC:
         self.joint_angle[0] = joint_0_theta
         self.joint_angle_degree[0] = np.degrees(self.joint_angle[0])
 
+        diff_joint_angle = np.diff(self.joint_angle)
+        self.joint_angle_relative = np.insert(diff_joint_angle, 0, self.joint_angle[0])
+        self.joint_angle_relative_degree = np.degrees(self.joint_angle_relative)
+
         # print(f'joints = {self.joints_xy}')
         # print(f'joint_tangent = {self.joint_tangents}')
         # print(f'joint_angle (rad) = {self.joint_angle}')
         # print(f'joint_angle (deg) = {self.joint_angle_degree}')
+
+        '''
+        @ TODO
+        have to add the operation for estimating position of each joints
+        using each estimated angles
+
+        '''
 
     def postprocess(self, image, binary_thresh=127, filfinder_flag=False):
         try:

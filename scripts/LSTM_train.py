@@ -24,10 +24,10 @@ curvefit_dataframe = pd.concat([df for df in json_dataframes])
 data_expanded = pd.concat([raw_dataframe, curvefit_dataframe], axis=1)
 
 # Curve fitting에서 Joint Angle 배열을 분리
-column_size = len(data_expanded['Joint Angle'].iloc[0])
+column_size = len(data_expanded['Joint Angles'].iloc[0])
 # Joint Angle 배열을 개별 열로 변환
-joint_angle = np.array(data_expanded['Joint Angle'].tolist())
-joint_angle_df = pd.DataFrame(joint_angle, columns=[f'Joint Angle_{i}' for i in range(column_size)])
+joint_angle = np.array(data_expanded['Joint Angles'].tolist())
+joint_angle_df = pd.DataFrame(joint_angle, columns=[f'Joint Angles_{i}' for i in range(column_size)])
 # 기존 데이터프레임과 Joint Angle 개별 열을 합침
 final_df = pd.concat([data_expanded.reset_index(drop=True), joint_angle_df], axis=1)
 
@@ -55,7 +55,7 @@ if not os.path.exists(save_dir):
 # 입력과 출력 데이터 분리
 # joint angles are not normalized before (from `save_image_curvefit_params_csv_json.py`)
 # normalized data
-input_columns = ['wire length #0', 'wire length #1', 'loadcell #0', 'loadcell #1'] + [f'Joint Angle_{i}' for i in range(column_size)]
+input_columns = ['wire length #0', 'wire length #1', 'loadcell #0', 'loadcell #1'] + [f'Joint Angles_{i}' for i in range(column_size)]
 output_columns = ['fx', 'fy']
 
 x = final_df[input_columns].values

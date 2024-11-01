@@ -1,6 +1,8 @@
 import os
 import sys
 import glob
+from xml.sax.saxutils import escape
+
 import cv2
 import matplotlib.pyplot as plt
 import time
@@ -24,12 +26,10 @@ from scipy.integrate import quad, fixed_quad, quadrature
 from scipy.optimize import minimize
 from numpy.polynomial import Polynomial
 
-
-print(f"Current Working Directory : {os.getcwd()}")
+from ament_index_python.packages import get_package_share_directory
+print(f"Current Working Directory : {os.getcwd()}", flush=True)
 
 image_path = '487_1723092780-883211914.png'
-
-
 # image_path = '302_1723092774-710305664.png'
 # image_path = '142_1723092769-375700928.png'
 
@@ -39,7 +39,6 @@ def create_directory(directory_path):
         print(f"Directory {directory_path} created.")
     else:
         print(f"Directory {directory_path} already exists.")
-
 
 class RBSC:
     def __init__(self, config_file='config.json'):
@@ -60,17 +59,20 @@ class RBSC:
         self.joints_invtrans_xy = None
         pass
 
-    def load_config(self, config_file='config.json'):
-        print(f'config.json PATH: {config_file}')
+    def load_config(self, config_file):
 
-        print(f'Load {config_file}')
-        print(f'===== json list ======')
-        with open(config_file, 'r') as f:
+        package_share_directory = get_package_share_directory('estimation_pkg')
+        config_path = os.path.join(package_share_directory, config_file)
+        print(f'[postprocess.py] config.json PATH: {config_path}', flush=True)
+        
+        print(f'Load {config_file}', flush=True)
+        print(f'===== json list ======', flush=True)
+        with open(config_path, 'r') as f:
             config = json.load(f)
             # print
             for key, value in config.items():
-                print(f'{key} : {value}')
-        print(f'===== json list end ===')
+                print(f'{key} : {value}', flush=True)
+        print(f'===== json list end ===', flush=True)
 
         return config
 
@@ -98,17 +100,14 @@ class RBSC:
         rotation_matrix = np.array([[np.cos(np.deg2rad(theta)), -np.sin(np.deg2rad(theta))],
                                     [np.sin(np.deg2rad(theta)), np.cos(np.deg2rad(theta))]])
         return np.dot(coords, rotation_matrix.T)
-
     def poly4d(self, x, a, b, c, d):
         return a * x ** 4 + b * x ** 3 + c * x ** 2 + d * x
         # return a * (x+2) ** 4 + b * (x+2) ** 3 + c * (x+2) ** 2 + d * (x+2)
 
     def poly3d(self, x, a, b, c):
         return a * x ** 3 + b * x ** 2 + c * x
-
     def log(self, x, a, b):
         return a * np.log(b * (x + 1))
-
     def poly4d_sigmoid(self, x, a, b, c, d, L, k, x0):
         exp_term = np.clip(-k * (x - x0), -700, 700)
         return (a * x ** 4 + b * x ** 3 + c * x ** 2 + d * x) + L / (1 + np.exp(exp_term))
@@ -116,7 +115,7 @@ class RBSC:
 
     # 곡선 양끝에 n개의 점 추가
     # y값을 기존값 그대로 쓸수도 있고, curve함수에 의해 수학적으로 구해지는 y를 쓸 수도 있다.
-    def extend_curve(self, x, y, popt, rate=0.8, start_method='linear', end_method='curve', replace='origin'):
+    def extend_curve(self, x, y, popt, rate=0.8, start_method='linear', end_method='curve',replace='origin'):
         """
         :param x: x values
         :param y: y values
@@ -126,8 +125,8 @@ class RBSC:
                         or the y obtained mathematically by the curve function can be used.
         :return: extended x, y values
         """
-        interval = (x.max() - x.min()) / len(x)
-        n = len(x) * rate  # 전체 데이터 개수의 rate * 100 %만큼 연장
+        interval =  (x.max() - x.min()) / len(x)
+        n = len(x) * rate    # 전체 데이터 개수의 rate * 100 %만큼 연장
         n = int(n)
         extend_threshold = interval * n
         x_new_start = np.arange(x.min() - extend_threshold, x.min(), interval)
@@ -163,7 +162,6 @@ class RBSC:
         params = None
         if popt == 'poly4d':
             params = self.popt_poly4d
-
         # 피팅된 곡선 함수 정의 (curve_length 함수 내부에서)
         def fitted_curve(x):
             # return params[0] * x ** 4 + params[1] * x ** 3 + params[2] * x ** 2 + params[3] * x
@@ -183,7 +181,7 @@ class RBSC:
 
         return length
 
-    # 주어진 곡선 길이에 대해 끝점을 찾는 함수
+    # 주어진 곡선 길이에 대해 끝점(x1)을 찾는 함수
     def find_x_for_given_length(self, x_start, target_length):
         # 곡선 길이를 계산한 후, 주어진 길이와의 차이를 반환하는 함수 정의
         def length_difference(x_end):
@@ -212,6 +210,8 @@ class RBSC:
         result = minimize(distance_from_curve, px)
         return result.x[0]
 
+
+
     def range_normalization(self, coordinates):
         # ========== Normalization of width and height based on image size ==========
         # It should be reduced based on the length of the width or height, which is longer
@@ -226,6 +226,7 @@ class RBSC:
         return self.norm_xy_coords
 
     def range_denormalization(self, coordinates):
+
 
         return self.__div, self.norm_xy_coords
 
@@ -268,7 +269,7 @@ class RBSC:
         self.extended_skeleton_origin_yx = np.column_stack(np.where(self.extended_curve > 0)).astype(np.float64)
 
         ext_curve = np.zeros((self.image_h, self.image_w))
-        ext_curve[new_y, new_x] = 1
+        ext_curve[new_y,new_x] = 1
         yx_pixel = np.column_stack(np.where(ext_curve > 0)).astype(np.float64)
 
         return yx_pixel
@@ -290,12 +291,13 @@ class RBSC:
         # print(f'total len = {self.curve_length}')
 
         target_len = self.curve_length / float(2 * num_of_segments)
+        
         x1 = self.find_x_for_given_length(self.start_point[0], target_length=target_len)
         self.joint_x[0] = x1
 
         for i in range(1, num_of_segments):
             target_len = self.curve_length / float(num_of_segments)
-            x1 = self.find_x_for_given_length(self.joint_x[i - 1], target_length=target_len)
+            x1 = self.find_x_for_given_length(self.joint_x[i-1], target_length=target_len)
             self.joint_x[i] = x1
             # print(f'i={i} || target_len={target_len} | x0={self.joint_x[i-1]} -> x1={self.joint_x[i]}')
 
@@ -308,20 +310,32 @@ class RBSC:
         self.joint_angle = np.arctan(self.joint_tangents)
         self.joint_angle_degree = np.degrees(self.joint_angle)
 
+        # first(0) joint is unstable compared to another joints
         # 첫번째 segment는 오차가 있어서 점사이의 벡터를 가지고 각도를 따로 정의함
-        vector_seg1_to_seg2 = [self.joints_xy[1, 0] - self.joints_xy[0, 0], self.joints_xy[1, 1] - self.joints_xy[0, 1]]
+        vector_seg1_to_seg2 = [self.joints_xy[1,0]-self.joints_xy[0,0], self.joints_xy[1,1]-self.joints_xy[0,1]]
         tangent = vector_seg1_to_seg2[1] / vector_seg1_to_seg2[0]
         theta = np.arctan(tangent)
-        joint_0_theta = theta / 2.0
+        joint_0_theta = theta/2.0
         self.joint_angle[0] = joint_0_theta
         self.joint_angle_degree[0] = np.degrees(self.joint_angle[0])
+
+        diff_joint_angle = np.diff(self.joint_angle)
+        self.joint_angle_relative = np.insert(diff_joint_angle, 0, self.joint_angle[0])
+        self.joint_angle_relative_degree = np.degrees(self.joint_angle_relative)
 
         # print(f'joints = {self.joints_xy}')
         # print(f'joint_tangent = {self.joint_tangents}')
         # print(f'joint_angle (rad) = {self.joint_angle}')
         # print(f'joint_angle (deg) = {self.joint_angle_degree}')
 
-    def postprocess(self, image, binary_thresh=40, filfinder_flag=False):
+        '''
+        @ TODO
+        have to add the operation for estimating position of each joints
+        using each estimated angles
+
+        '''
+
+    def postprocess(self, image, binary_thresh=127, filfinder_flag=False):
         try:
             # ========== post processing ==========
             # 1. read as grayscale
@@ -350,6 +364,8 @@ class RBSC:
             self.body_image_origin = (labels == max_label).astype(np.uint8) * 255
             self.body_image = self.smoothing(binary=self.body_image_origin, k_size=15)
 
+            # print(f'{self.image} / {self.image.shape} / {self.image.size} ')
+            # print(f'{self.body_image} / {self.body_image.shape} / {self.body_image.size} ')
             # ========== Find skeleton of backbone ==========
             # perform skeletonization
             self.skeleton = skeletonize(self.body_image, method='lee')
@@ -374,9 +390,9 @@ class RBSC:
 
             self.pixel_to_orthogonal_coordinate(self.longest_backbone_image)
         except Exception as e:
-            print(f'postprocess error : {e}')
+            print(f'postprocess error : {e}', flush=True)
             return
-
+        
         # ========== Curve fitting ==========
         try:
             # 데이터 가중치 설정
@@ -395,13 +411,11 @@ class RBSC:
             self.trans_xy_coords = self.rotation_matrix(self.norm_xy_coords, theta=-90)
 
             # 2. curve fitting
-            self.temp_popt_poly4d, _ = curve_fit(self.poly4d, self.trans_xy_coords[:, 0], self.trans_xy_coords[:, 1],
-                                                 maxfev=2000)
+            self.temp_popt_poly4d, _ = curve_fit(self.poly4d, self.trans_xy_coords[:, 0], self.trans_xy_coords[:, 1], maxfev=2000)
             # self.popt_poly4d, _ = curve_fit(self.poly4d, self.trans_xy_coords[:, 0], self.trans_xy_coords[:, 1], sigma=sigma, maxfev=2000)
             self.fitted_y_poly4d = self.poly4d(self.trans_xy_coords[:, 0], *self.temp_popt_poly4d)
             self.func_poly4d = lambda x: self.poly4d(x, *self.temp_popt_poly4d)
-            self.dfdx_poly4d = lambda x: self.temp_popt_poly4d[0] * 4 * x ** 3 + self.temp_popt_poly4d[1] * 3 * x ** 2 + \
-                                         self.temp_popt_poly4d[2] * 2 * x + self.temp_popt_poly4d[3]
+            self.dfdx_poly4d = lambda x: self.temp_popt_poly4d[0]*4*x**3 + self.temp_popt_poly4d[1]*3*x**2 + self.temp_popt_poly4d[2]*2*x + self.temp_popt_poly4d[3]
             # self.popt_poly3d, _ = curve_fit(self.poly3d, self.trans_xy_coords[:, 0], self.trans_xy_coords[:, 1], maxfev=2000)
             # self.fitted_y_poly3d = self.poly3d(self.trans_xy_coords[:, 0], *self.popt_poly3d)
             #
@@ -423,8 +437,7 @@ class RBSC:
             6. get center line of object
             '''
             # 1. Extraploation
-            ext_coords_x, ext_coords_y = self.extend_curve(self.trans_xy_coords[:, 0], self.trans_xy_coords[:, 1],
-                                                           self.temp_popt_poly4d, rate=0.2)
+            ext_coords_x, ext_coords_y = self.extend_curve(self.trans_xy_coords[:, 0], self.trans_xy_coords[:, 1], self.temp_popt_poly4d, rate=0.2)
 
             # Import
             # update curvefit coefficients
@@ -447,7 +460,7 @@ class RBSC:
             body_image = np.copy(self.body_image) / 255.0
             self.extended_skeleton = np.logical_and(body_image, self.extended_curve).astype(int)
             self.extended_yx_coords = np.column_stack(np.where(self.extended_skeleton > 0)).astype(np.float64)
-            self.extended_xy_coords = self.extended_yx_coords[:, [1, 0]]  # x, y 열 위치 조정
+            self.extended_xy_coords = self.extended_yx_coords[:, [1, 0]] # x, y 열 위치 조정
             self.extended_xy_coords[:, 1] = self.extended_skeleton.shape[0] - self.extended_xy_coords[:, 1]
 
             self.new_extended_xy_coords = self.extended_xy_coords - self.origin_xy
@@ -481,10 +494,12 @@ class RBSC:
 
             self.image_rgb_with_landmarks = self.draw_arrows(self.image)
 
-            a = 0
+            a=0
 
         except Exception as e:
-            print(f"Error : {e} \n OptimizeWarning for image: {image_path} - returning last calculated values")
+            print(f"postprocess() error : {e}", flush=True)
+            # print(f"Error : {e} \n OptimizeWarning for image: {image_path} - returning last calculated values", flush=True)
+            pass
 
         finally:
             return self.popt_poly4d, self.popt_poly3d, self.popt_log
@@ -512,53 +527,44 @@ class RBSC:
 
             return frame
         except Exception as e:
-            # print(f'draw_arrows() error: {e}')
+            # print(f'draw_arrows() error: {e}', flush=True)
             return
 
-    def plot_save(self, save_dir, image_name):
+    def plot_save(self, save_dir):
         # results_0.4mm
         # rads = -np.deg2rad(self.joint_angle_degree)
-        try:
-            rads = self.joint_angle + np.pi / 2
-            # print(f'rads = {rads}')
-            arrow_length = 15
-            u = np.cos(rads) * arrow_length
-            v = np.sin(rads) * arrow_length
-            v = -v
-            vector_scale = 1
-            plt.figure(figsize=(10, 5))
-            # plt.subplot(2, 3, 6)
-            plt.title('Grayscale Image')
-            plt.imshow(self.gray_image, cmap='gray')
-            pixel_yx = np.flip(self.joint_yx_pixel, axis=0)
-            plt.scatter(pixel_yx[:, 1], pixel_yx[:, 0], color='red', s=4, label='Joint Point')
-            plt.quiver(pixel_yx[:, 1], pixel_yx[:, 0],
-                       u, v,
-                       angles='xy',
-                       scale_units='xy',
-                       scale=vector_scale,
-                       width=0.005,
-                       headwidth=2,
-                       headlength=2,
-                       headaxislength=2,
-                       color='blue'
-                       )
-            plt.axis('off')
+        rads = self.joint_angle + np.pi / 2
+        # print(f'rads = {rads}')
+        arrow_length = 15
+        u = np.cos(rads) * arrow_length
+        v = np.sin(rads) * arrow_length
+        v = -v
+        vector_scale = 1
+        plt.figure(figsize=(10, 5))
+        # plt.subplot(2, 3, 6)
+        plt.title('Grayscale Image')
+        plt.imshow(self.gray_image, cmap='gray')
+        pixel_yx = np.flip(self.joint_yx_pixel, axis=0)
+        plt.scatter(pixel_yx[:, 1], pixel_yx[:, 0], color='red', s=4, label='Joint Point')
+        plt.quiver(pixel_yx[:, 1], pixel_yx[:, 0],
+                   u, v,
+                   angles='xy',
+                   scale_units='xy',
+                   scale=vector_scale,
+                   width=0.005,
+                   headwidth=2,
+                   headlength=2,
+                   headaxislength=2,
+                   color='blue'
+                   )
+        plt.axis('off')
 
-            # 이미지를 파일로 저장
-            dir_name = save_dir
-            image_filename = image_name
-            plt.savefig(os.path.join(dir_name, image_filename), bbox_inches='tight', pad_inches=0)
-        except Exception as e:
-            print(f'save_plot() error: {e}')
-            print(f'u: {u}\n pixel_yx: {pixel_yx}')
-
+        # 이미지를 파일로 저장
+        dir_name = save_dir
+        image_filename = os.path.basename(self.image_path)
+        plt.savefig(os.path.join(dir_name, image_filename), bbox_inches='tight', pad_inches=0)
 
     def show(self):
-        plt.figure('rgb with landmarks')
-        plt.imshow(self.image_rgb_with_landmarks)
-        plt.title('rgb with landmarks')
-
         # 결과 출력
         plt.figure(figsize=(10, 5))
 
@@ -591,8 +597,7 @@ class RBSC:
         plt.subplot(2, 3, 5)
         plt.imshow(self.body_image, cmap='gray')
         # plt.scatter(self.extended_curve[:, 1], self.extended_curve[:, 0], color='red', s=10)
-        plt.scatter(self.extended_yx_coords[:, 1], self.extended_yx_coords[:, 0], color='orange', s=4,
-                    label='Extended skeleton')
+        plt.scatter(self.extended_yx_coords[:, 1], self.extended_yx_coords[:, 0], color='orange', s=4, label='Extended skeleton')
         plt.scatter(self.yx_coords[:, 1], self.yx_coords[:, 0], color='blue', s=1, label='Original skeleton')
         plt.legend()
         plt.title('Extended Pixel')
@@ -608,16 +613,17 @@ class RBSC:
         plt.legend()
         plt.axis('off')
 
+
         # results_0.4mm
         # rads = -np.deg2rad(self.joint_angle_degree)
-        rads = self.joint_angle + np.pi / 2
-        print(f'rads = {rads}')
+        rads = self.joint_angle + np.pi/2
+        print(f'rads = {rads}', flush=True)
         arrow_length = 15
         u = np.cos(rads) * arrow_length
         v = np.sin(rads) * arrow_length
         v = -v
         vector_scale = 1
-        plt.figure(figsize=(10, 5))
+        plt.figure(figsize=(10,5))
         # plt.subplot(2, 3, 6)
         plt.title('Grayscale Image')
         plt.imshow(self.gray_image, cmap='gray')
@@ -637,7 +643,7 @@ class RBSC:
         plt.axis('off')
 
         #############################################################
-        plt.figure(figsize=(10, 5))
+        plt.figure(figsize=(10,5))
         plt.subplot(3, 3, 1)
         plt.scatter(self.xy_coords[:, 0], self.xy_coords[:, 1], color='black', s=1, label='Original data')
         plt.title('Data unit pixel size')
@@ -676,16 +682,12 @@ class RBSC:
 
         # 시각화
         plt.figure(figsize=(8, 6))
-        plt.plot(self.norm_trans_extended_xy_coords[:, 0], self.norm_trans_extended_xy_coords[:, 1], 'yo',
-                 markersize=10,
+        plt.plot(self.norm_trans_extended_xy_coords[:, 0], self.norm_trans_extended_xy_coords[:, 1], 'yo', markersize=10,
                  label='Extended Data(Skeleton) Points')
-        plt.plot(self.trans_xy_coords[:, 0], self.trans_xy_coords[:, 1], 'bo', markersize=5,
-                 label='Origin Data(Skeleton) Points')
+        plt.plot(self.trans_xy_coords[:, 0], self.trans_xy_coords[:, 1], 'bo', markersize=5, label='Origin Data(Skeleton) Points')
         plt.plot(x_range, self.func_poly4d(x_range), 'k-', label='Fitted Curve')
-        plt.plot(self.start_point[0], self.start_point[1], 'ro',
-                 label=f'Measured Start Point ({self.start_point[0]:.5f}, {self.start_point[1]:.5f})')
-        plt.plot([self.end_point[0]], [self.end_point[1]], 'ro',
-                 label=f'Measured End Point ({self.end_point[0]:.5f}, {self.end_point[1]:.5f})')
+        plt.plot(self.start_point[0], self.start_point[1], 'ro', label=f'Measured Start Point ({self.start_point[0]:.5f}, {self.start_point[1]:.5f})')
+        plt.plot([self.end_point[0]], [self.end_point[1]], 'ro', label=f'Measured End Point ({self.end_point[0]:.5f}, {self.end_point[1]:.5f})')
         plt.plot([self.x0], [self.y0], 'gx', label=f'Start Closest Point ({self.x0:.5f}, {self.y0:.5f})')
         plt.plot([self.x1], [self.y1], 'gx', label=f'End Closest Point ({self.x1:.5f}, {self.y1:.5f})')
         plt.plot(self.joint_x, self.joint_y, 'ro', label=f'Joint Point')
@@ -719,7 +721,6 @@ class RBSC:
 
         plt.show()
 
-
 if __name__ == '__main__':
     rbsc = RBSC()
     image = cv2.imread(image_path, cv2.IMREAD_COLOR)
@@ -727,8 +728,7 @@ if __name__ == '__main__':
     rbsc.show()
 
     # img_dir = 'data/2024-08-08 experiment/2024-08-08-13-52-44 nopayload/images'
-    dir_path = '../data/2024-10-01 experiment (0.4 mm)/2024-10-01-16-32-03 Super Random'
-    img_dir = os.path.join(dir_path, 'images_ROI')
+    img_dir = 'data/2024-08-08 experiment/2024-08-08-13-46-11 upper_init-X/images'
     images = [img for img in os.listdir(img_dir) if img.endswith(".png") or img.endswith(".jpg")]
     images = natsorted(images)
 
@@ -736,13 +736,13 @@ if __name__ == '__main__':
     current_time = datetime.now()
     time_str = current_time.strftime("%Y%m%d_%H%M%S")
 
-    dir_name = os.path.join(dir_path, f'images_with_arrow_{time_str}')
+    dir_name = f'images_with_arrow_{time_str}'
     create_directory(dir_name)
     for image_name in tqdm(images):
         image_path = os.path.join(img_dir, image_name)
         image = cv2.imread(image_path, cv2.IMREAD_COLOR)
         rbsc.postprocess(image)
-        rbsc.plot_save(dir_name, image_name)
+        rbsc.plot_save(dir_name)
 
     # sampling time test
     n = 100
@@ -753,8 +753,8 @@ if __name__ == '__main__':
         # rbsc.plot_save()
         # print(f'num of sequence = {i}')
     et = time.time()
-    sampling_freq = n / (et - st)
-    print(f'total time : {et - st} / freq = {sampling_freq}')
+    sampling_freq = n/(et-st)
+    print(f'total time : {et-st} / freq = {sampling_freq}', flush=True)
 
     # cv2.imwrite('image_gray.png', rbsc.binary_image)
     # cv2.imwrite('image_gray_body.png', rbsc.body_image)
