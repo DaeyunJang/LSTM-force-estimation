@@ -173,7 +173,7 @@ class SegmentEstimationNode(Node):
 
           c_time = self.get_clock().now()
           self.segment_angle = self.rbsc.joint_angle  # radian
-          self.segment_angle_relative = self.rbsc.joint_angle  # radian
+          self.segment_angle_relative = self.rbsc.joint_angle_relative  # radian
           
           if self.segment_angle is not None and self.p_time is not None:
             dt = (c_time - self.p_time).nanoseconds * 1e-9 # conversion unit to sec
@@ -196,6 +196,7 @@ class SegmentEstimationNode(Node):
           self.event.set()
 
           self.segment_angle_prev = self.segment_angle
+          self.segment_angle_relative_prev = self.segment_angle_relative
           self.p_time = c_time
         # print(f'pub data(joint_angle) : {msg.data}')
       # else:
