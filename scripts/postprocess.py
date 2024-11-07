@@ -24,6 +24,8 @@ from scipy.integrate import quad, fixed_quad, quadrature
 from scipy.optimize import minimize
 from numpy.polynomial import Polynomial
 
+import cProfile
+from findiff import FinDiff
 
 print(f"Current Working Directory : {os.getcwd()}")
 
@@ -116,7 +118,7 @@ class RBSC:
 
     # 곡선 양끝에 n개의 점 추가
     # y값을 기존값 그대로 쓸수도 있고, curve함수에 의해 수학적으로 구해지는 y를 쓸 수도 있다.
-    def extend_curve(self, x, y, popt, rate=0.8, start_method='linear', end_method='curve', replace='origin'):
+    def extend_curve(self, x, y, popt, rate=0.8, start_method='linear', end_method='linear', replace='origin'):
         """
         :param x: x values
         :param y: y values
@@ -141,13 +143,12 @@ class RBSC:
             y_new_end = self.poly4d(x_new_end, *popt)
 
             if start_method == 'linear':
-                tangent = derivative(self.func_poly4d, x.min(), dx=1e-6)
+                tangent = derivative(self.func_poly4d, x.min(), dx=1e-2)
                 y_new_start = tangent * x_new_start
             elif start_method == 'curve':
                 y_new_start = self.poly4d(x_new_start, *popt)
-
             if end_method == 'linear':
-                tangent = derivative(self.func_poly4d, x.max(), dx=1e-6)
+                tangent = derivative(self.func_poly4d, x.max(), dx=1e-2)
                 y_new_end = tangent * x_new_end
             elif end_method == 'curve':
                 y_new_end = self.poly4d(x_new_end, *popt)
@@ -170,7 +171,7 @@ class RBSC:
             return self.poly4d(x, *params)
 
         # 곡선의 도함수를 수치적으로 계산하여 길이를 구함
-        integrand = lambda x: np.sqrt(1 + derivative(fitted_curve, x, dx=1e-6) ** 2)
+        integrand = lambda x: np.sqrt(1 + derivative(fitted_curve, x, dx=1e-2) ** 2)
         # integrand = lambda x: np.sqrt(1 + self.dfdx_poly4d(x) ** 2)
 
         # length, _ = quad(integrand, x_start, x_end)
@@ -183,11 +184,29 @@ class RBSC:
 
         return length
 
+    # def find_x_for_given_length(self, x_start, target_length, tol=1e-2):
+    #     # 길이 차이를 구하는 함수 정의
+    #     def length_difference(x_end):
+    #         return abs(self.get_curve_length(x_start, x_end) - target_length)
+    #
+    #     # 빠른 수치 미분 계산
+    #     d_dx = FinDiff(0, 1e-2, 1)  # 미분간격 dx=1e-2
+    #
+    #     # 수치적 미분을 활용한 경사하강법이나 최적화 알고리즘 적용 가능
+    #     x = x_start
+    #     for _ in range(100):  # 반복 횟수 조정 가능
+    #         grad = d_dx(length_difference, x)
+    #         if abs(grad) < tol:
+    #             break
+    #         x -= length_difference(x) / grad  # Newton-Raphson과 유사한 업데이트
+    #
+    #     return x
+
     # 주어진 곡선 길이에 대해 끝점을 찾는 함수
     def find_x_for_given_length(self, x_start, target_length):
         # 곡선 길이를 계산한 후, 주어진 길이와의 차이를 반환하는 함수 정의
         def length_difference(x_end):
-            return abs(self.get_curve_length(x_start, x_end) - target_length)
+            return abs(self.get_curve_length(x_start, x_end, method='fixed_quad', n=100) - target_length)
 
         # 수치적으로 근을 찾기 위해 brentq 사용 (root-finding)
         # x_end = brentq(length_difference, x_start, x_start + target_length)  # 범위를 적절히 조절
@@ -197,12 +216,9 @@ class RBSC:
             length_difference,
             bounds=(x_start, x_start + target_length),
             method='bounded',
-            options={'xatol': 1e-6}
+            options={'xatol': 1e-2}
         )
         return result.x
-
-        # result = root_scalar(length_difference, bracket=[x_start, x_start + 10], method='brentq')
-        # return result.root
 
     def find_closest_point(self, px, py):
         # 임의의 점 (px, py)에서 곡선까지의 거리 최소화
@@ -276,9 +292,9 @@ class RBSC:
     def get_joints(self):
         # ============= find junction points ============
         # 끝점의 기울기 - test
-        self.tip_tangent = derivative(self.func_poly4d, self.x1, dx=1e-6)
-        self.tip_angle_rad = np.arctan(self.tip_tangent)
-        self.tip_angle_deg = np.degrees(self.tip_angle_rad)
+        # self.tip_tangent = derivative(self.func_poly4d, self.x1, dx=1e-2)
+        # self.tip_angle_rad = np.arctan(self.tip_tangent)
+        # self.tip_angle_deg = np.degrees(self.tip_angle_rad)
         # print(f'tip_angle (deg) = {self.tip_angle_deg}')
 
         ###########################################################################
@@ -304,7 +320,7 @@ class RBSC:
         self.joint_y = self.func_poly4d(self.joint_x)
         self.joints_xy = np.column_stack((self.joint_x, self.joint_y))
 
-        self.joint_tangents = np.array([derivative(self.func_poly4d, x0, dx=1e-6) for x0 in self.joint_x])
+        self.joint_tangents = np.array([derivative(self.func_poly4d, x0, dx=1e-2) for x0 in self.joint_x])
         self.joint_angle = np.arctan(self.joint_tangents)
         self.joint_angle_degree = np.degrees(self.joint_angle)
 
@@ -722,29 +738,30 @@ if __name__ == '__main__':
     rbsc.show()
 
     # img_dir = 'data/2024-08-08 experiment/2024-08-08-13-52-44 nopayload/images'
-    dir_path = '../data/2024-08-08 experiment/2024-08-08-13-46-11 upper_init-X'
-    img_dir = os.path.join(dir_path, 'images')
-    images = [img for img in os.listdir(img_dir) if img.endswith(".png") or img.endswith(".jpg")]
-    images = natsorted(images)
-
-    # 현재 시간 가져오기
-    current_time = datetime.now()
-    time_str = current_time.strftime("%Y%m%d_%H%M%S")
-
-    dir_name = os.path.join(dir_path, f'images_with_arrow_{time_str}')
-    create_directory(dir_name)
-    for image_name in tqdm(images):
-        image_path = os.path.join(img_dir, image_name)
-        image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-        rbsc.postprocess(image)
-        rbsc.plot_save(dir_name, image_name)
+    # dir_path = '../data/2024-08-08 experiment/2024-08-08-13-46-11 upper_init-X'
+    # img_dir = os.path.join(dir_path, 'images')
+    # images = [img for img in os.listdir(img_dir) if img.endswith(".png") or img.endswith(".jpg")]
+    # images = natsorted(images)
+    #
+    # # 현재 시간 가져오기
+    # current_time = datetime.now()
+    # time_str = current_time.strftime("%Y%m%d_%H%M%S")
+    #
+    # dir_name = os.path.join(dir_path, f'images_with_arrow_{time_str}')
+    # create_directory(dir_name)
+    # for image_name in tqdm(images):
+    #     image_path = os.path.join(img_dir, image_name)
+    #     image = cv2.imread(image_path, cv2.IMREAD_COLOR)
+    #     rbsc.postprocess(image)
+    #     rbsc.plot_save(dir_name, image_name)
 
     # sampling time test
-    n = 100
+    n = 1
     st = time.time()
     for i in tqdm(range(n)):
         # cProfile.run('rbsc.postprocess(image_path)')
-        rbsc.postprocess(image)
+        cProfile.run('rbsc.postprocess(image)')
+        # rbsc.postprocess(image)
         # rbsc.plot_save()
         # print(f'num of sequence = {i}')
     et = time.time()
