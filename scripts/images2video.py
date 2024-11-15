@@ -2,6 +2,7 @@ import cv2
 import os
 from natsort import natsorted
 import imageio
+from tqdm import tqdm
 
 def create_directory(directory_path):
     if not os.path.exists(directory_path):
@@ -11,8 +12,8 @@ def create_directory(directory_path):
         print(f"Directory {directory_path} already exists.")
 
 # 이미지가 저장된 디렉토리 경로
-name = 'images_with_arrow_20240919_162607'
-image_folder = os.path.join('../data/2024-08-08 experiment/2024-08-08-13-46-11 upper_init-X', name)
+name = 'images_with_arrow_20241007_070507'
+image_folder = os.path.join('../data/2024-10-01 experiment (0.4 mm)/2024-10-01-16-32-03 Super Random', name)
 
 create_directory('videos')
 video_name = 'videos/' + name + '.avi'
@@ -36,7 +37,7 @@ video2 = cv2.VideoWriter(video_name_mp4, cv2.VideoWriter_fourcc(*'DIVX'), fps, (
 gif_frames = []
 
 # 이미지들을 비디오로 변환 및 GIF로 저장
-for image in images:
+for image in tqdm(images):
     img_path = os.path.join(image_folder, image)
     frame = cv2.imread(img_path)
 

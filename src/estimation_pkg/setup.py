@@ -13,8 +13,12 @@ setup(
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'launch'), glob.glob(os.path.join('launch', '*launch.[pxy][yma]*'))),
         (os.path.join('share', package_name), ['estimation_pkg/config.json']),
+        (os.path.join('share', package_name), ['estimation_pkg/config_ROI_ref.json']),
         # (os.path.join('share', package_name, 'config'), glob('config/*.perspective')),
-        (os.path.join('share', package_name), ['config/rqt_perspective/rqt_setting.perspective'])
+        (os.path.join('share', package_name), ['config/rqt_perspective/rqt_setting.perspective']),
+        (os.path.join('share', package_name), ['model/lstm_model.h5']),
+        (os.path.join('share', package_name), ['model/scaler_x.pkl']),
+        (os.path.join('share', package_name), ['model/scaler_y.pkl']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

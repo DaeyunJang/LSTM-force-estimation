@@ -25,7 +25,7 @@ def create_directory(directory_path):
 
 ############################################################################
 
-def low_pass_filter(data, cutoff_frequency=0.2, sampling_rate=30.0, order=4):
+def low_pass_filter(data, cutoff_frequency=0.2, sampling_rate=15.0, order=4):
     nyquist = 0.5 * sampling_rate
     normal_cutoff = cutoff_frequency / nyquist
     b, a = butter(order, normal_cutoff, btype='low', analog=False)
@@ -47,7 +47,8 @@ def process(dir_path, rbsc: RBSC, do_LPF=True, do_curvefit=True):
     '''
 
     upper_dir_name = os.path.basename(dir_path)
-    image_path = os.path.join(dir_path, 'images')
+    # image_path = os.path.join(dir_path, 'images')
+    image_path = os.path.join(dir_path, 'images_ROI')
 
     # create directories for saving
     output_directory_name_body = os.path.join(dir_path, 'images_crop_body')
@@ -81,7 +82,7 @@ def process(dir_path, rbsc: RBSC, do_LPF=True, do_curvefit=True):
             data_lpf_all[column] = filtered_values
 
         ###
-        # Not use in LSTM_train.py
+        # Not use in LSTM_train_legacy.py
         # Just check and debug on .csv file
         scaler = MinMaxScaler()
         columns_to_normalized = ['wire length #0', 'wire length #1', 'loadcell #0', 'loadcell #1', 'fx', 'fy', 'fz', 'tx', 'ty', 'tz']
@@ -138,6 +139,7 @@ def process(dir_path, rbsc: RBSC, do_LPF=True, do_curvefit=True):
                 image = cv2.imread(img_path, cv2.IMREAD_COLOR)
                 coef_4d, coef_3d, coef_log = rbsc.postprocess(image)
                 joint_angle = rbsc.joint_angle
+                joint_angle_relative = rbsc.joint_angle_relative
                 if coef_4d is not None:
                     csv_results_poly4d.append((filename, coef_4d))
                     json_results_poly4d.append({'Image Filename': filename, 'Coefficients': coef_4d.tolist()})
@@ -148,8 +150,10 @@ def process(dir_path, rbsc: RBSC, do_LPF=True, do_curvefit=True):
                     csv_results_log.append((filename, coef_log))
                     json_results_log.append({'Image Filename': filename, 'Coefficients': coef_log.tolist()})
 
-                csv_results_joint_angle.append((filename, joint_angle))
-                json_results_joint_angle.append({'Image Filename': filename, 'Joint Angle': joint_angle.tolist()})
+                csv_results_joint_angle.append((filename, joint_angle, joint_angle_relative))
+                json_results_joint_angle.append({'Image Filename': filename,
+                                                 'Joint Angles': joint_angle.tolist(),
+                                                 'Joint Angles Relative': joint_angle_relative.tolist()})
 
                 img_save_path = os.path.join(output_directory_name_body, filename)
                 cv2.imwrite(img_save_path, rbsc.body_image)
@@ -163,7 +167,7 @@ def process(dir_path, rbsc: RBSC, do_LPF=True, do_curvefit=True):
         df0 = pd.DataFrame(csv_results_poly4d, columns=['Image Filename', 'Coefficients'])
         # df1 = pd.DataFrame(csv_results_poly3d, columns=['Image Filename', 'Coefficients'])
         # df2 = pd.DataFrame(csv_results_log, columns=['Image Filename', 'Coefficients'])
-        df3 = pd.DataFrame(csv_results_joint_angle, columns=['Image Filename', 'Joint Angles'])
+        df3 = pd.DataFrame(csv_results_joint_angle, columns=['Image Filename', 'Joint Angles', 'Joint Angles Relative'])
 
         df0.to_csv(result_dir + '/' + 'curve_fit_result-poly4d_' + upper_dir_name + '.csv', index=False)
         # df1.to_csv(result_dir + '/' + 'curve_fit_result-poly3d_' + upper_dir_name + '.csv', index=False)
@@ -191,13 +195,16 @@ def process(dir_path, rbsc: RBSC, do_LPF=True, do_curvefit=True):
 
 if __name__ == '__main__':
     # define path of directory
-    base_dir = '../data/2024-08-07 experiment'
+    base_dir = '../data/2024-10-10 experiment (0.35 mm) test'
 
     # 이미지 프로세싱 클래스
     rbsc = RBSC()
     # 최상위 폴더 내의 모든 하위 폴더를 탐색
     subfolders = [os.path.join(base_dir, name) for name in os.listdir(base_dir)
                   if os.path.isdir(os.path.join(base_dir, name))]
+
+    # dir_path = '../data/2024-10-10 experiment (0.35 mm)/2024-10-11-10-56-25 sine-dynamic'
+    # df_results = process(dir_path, rbsc)
 
     for dir_path in subfolders:
         # 폴더 처리 및 결과 저장
