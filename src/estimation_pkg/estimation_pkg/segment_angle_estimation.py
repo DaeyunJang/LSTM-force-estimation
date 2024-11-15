@@ -102,7 +102,7 @@ class SegmentEstimationNode(Node):
        "estimated_segment_angle/absolute",
        QOS_RKL10V
     )
-    self.segment_angle_publisher = self.create_publisher(
+    self.segment_angle_relative_publisher = self.create_publisher(
        Float32MultiArray,
        "estimated_segment_angle/relative",
        QOS_RKL10V
@@ -112,7 +112,7 @@ class SegmentEstimationNode(Node):
        "estimated_segment_angular_velocity/absolute",
        QOS_RKL10V
     )
-    self.segment_angular_velocity_publisher = self.create_publisher(
+    self.segment_angular_velocity_relative_publisher = self.create_publisher(
        Float32MultiArray,
        "estimated_segment_angular_velocity/relative",
        QOS_RKL10V
@@ -188,10 +188,16 @@ class SegmentEstimationNode(Node):
           msg = Float32MultiArray()
           msg.data = self.segment_angle.tolist()
           self.segment_angle_publisher.publish(msg)
+          msg = Float32MultiArray()
+          msg.data = self.segment_angle_relative.tolist()
+          self.segment_angle_relative_publisher.publish(msg)
 
           msg_omega = Float32MultiArray()
           msg_omega.data = self.segment_angular_velocity.tolist()
           self.segment_angular_velocity_publisher.publish(msg_omega)
+          msg_omega = Float32MultiArray()
+          msg_omega.data = self.segment_angular_velocity_relative.tolist()
+          self.segment_angular_velocity_relative_publisher.publish(msg_omega)
 
           self.event.set()
 
