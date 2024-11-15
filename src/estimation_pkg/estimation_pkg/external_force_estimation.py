@@ -19,6 +19,7 @@ from custom_interfaces.msg import LoadcellState
 from custom_interfaces.msg import DataFilterSetting
 
 from rclpy.executors import MultiThreadedExecutor
+from ament_index_python.packages import get_package_share_directory
 
 import numpy as np
 import tensorflow as tf
@@ -41,12 +42,36 @@ class ExternalForceEstimationNode(Node):
     print(os.path.abspath(__file__))
     print("============================")
     
-    self.declare_parameter('model_path', 'model/lstm_model.h5')
+    package_share_directory = get_package_share_directory('estimation_pkg')
+
+    model_path = os.path.join(package_share_directory, 'lstm_model.h5')
+    self.declare_parameter('model_path', model_path)
     self.model_path = self.get_parameter('model_path').get_parameter_value().string_value
-    self.declare_parameter('scaler_x_path', 'model/scaler_x.pkl')
+
+    scaler_x_path = os.path.join(package_share_directory, 'scaler_x.pkl')
+    self.declare_parameter('scaler_x_path', scaler_x_path)
     self.scaler_x_path = self.get_parameter('scaler_x_path').get_parameter_value().string_value
-    self.declare_parameter('scaler_y_path', 'model/scaler_y.pkl')
+    
+    scaler_y_path = os.path.join(package_share_directory, 'scaler_y.pkl')
+    self.declare_parameter('scaler_y_path', scaler_y_path)
     self.scaler_y_path = self.get_parameter('scaler_y_path').get_parameter_value().string_value
+
+    package_share_directory = get_package_share_directory('estimation_pkg')
+
+    # If use _launch.py, do these lines
+    self.model_path = self.get_parameter('model_path').get_parameter_value().string_value
+    self.scaler_x_path = self.get_parameter('scaler_x_path').get_parameter_value().string_value
+    self.scaler_y_path = self.get_parameter('scaler_y_path').get_parameter_value().string_value
+
+
+    print(f'[external_force_estimation.py] lstm_model.h5 PATH: {model_path}', flush=True)
+    print(f'[external_force_estimation.py] scaler_x.pkl PATH: {scaler_x_path}', flush=True)
+    print(f'[external_force_estimation.py] scaler_y.pkl PATH: {scaler_y_path}', flush=True)
+    print(f'[external_force_estimation.py] lstm_model.h5 PATH: {self.model_path}', flush=True)
+    print(f'[external_force_estimation.py] scaler_x.pkl PATH: {self.scaler_x_path}', flush=True)
+    print(f'[external_force_estimation.py] scaler_y.pkl PATH: {self.scaler_y_path}', flush=True)
+
+    self.declare_parameter('input_output_monitor', False)
     
     self.model = tf.keras.models.load_model(self.model_path)
     # self.model = tf.keras.models.load_model('model/lstm_model.h5')
@@ -71,23 +96,6 @@ class ExternalForceEstimationNode(Node):
             depth=10,
             durability=QoSDurabilityPolicy.VOLATILE
     )
-
-    # self.fts_data_flag = False
-    # self.fts_data = WrenchStamped()
-    # self.fts_subscriber = self.create_subscription(
-    #     WrenchStamped,
-    #     'fts_data',
-    #     self.read_fts_data,
-    #     QOS_RKL1V
-    # )
-    # self.fts_data_offset = WrenchStamped()
-    # self.fts_offset_subscriber = self.create_subscription(
-    #     WrenchStamped,
-    #     'fts_data_offset',
-    #     self.read_fts_data_offset,
-    #     QOS_RKL1V
-    # )
-    # self.get_logger().info('fts_data subscriber is created.')
 
     self.loadcell_data_flag = False
     self.loadcell_data = LoadcellState()
@@ -120,7 +128,7 @@ class ExternalForceEstimationNode(Node):
     self.segment_angle = Float32MultiArray()
     self.segment_angle_subscriber = self.create_subscription(
         Float32MultiArray,
-        "estimated_segment_angle",
+        "estimated_segment_angle/relative",
         self.segment_angle_callback,
         QOS_RKL1V)
 
@@ -164,23 +172,24 @@ class ExternalForceEstimationNode(Node):
         lc = self.loadcell_data.stress
         segment_angle = self.segment_angle.data
 
-        self.get_logger().info(f'wl:{wl}\n lc:{lc} \n segment_angle:{segment_angle}')
+        # self.get_logger().info(f'wl:{wl}\n lc:{lc} \n segment_angle:{segment_angle}')
 
         # input = np.array([ wl + lc + segment_angle])
         input = np.concatenate((wl, lc, segment_angle))
         input_for_model = input.reshape((1, 12, 1))
-        self.get_logger().info(f'input data: {input_for_model}')
         predicted_normalized = self.model(input_for_model)
         predicted_denormalized = self.scaler_y.inverse_transform(predicted_normalized)
-        self.get_logger().info(f'estimation results: {predicted_denormalized}, size:{predicted_denormalized.size}, shape:{predicted_denormalized.shape} ')
+
+        # self.get_logger().info(f'input data: {input_for_model}')
+        # self.get_logger().info(f'estimation results: {predicted_denormalized}, size:{predicted_denormalized.size}, shape:{predicted_denormalized.shape} ')
 
         self.external_force.x = predicted_denormalized.flatten()[0]
         self.external_force.y = predicted_denormalized.flatten()[1]
         self.external_force_publisher.publish(self.external_force)
 
       except Exception as e:
-         self.get_logger().info(f'Exception: {e}')
-         traceback.print_exc()
+        #  self.get_logger().info(f'Exception: {e}')
+        #  traceback.print_exc()
          pass
       finally:
          pass

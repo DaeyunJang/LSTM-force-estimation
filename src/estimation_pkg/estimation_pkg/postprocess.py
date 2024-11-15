@@ -140,13 +140,13 @@ class RBSC:
             y_new_end = self.poly4d(x_new_end, *popt)
 
             if start_method == 'linear':
-                tangent = derivative(self.func_poly4d, x.min(), dx=1e-6)
+                tangent = derivative(self.func_poly4d, x.min(), dx=1e-3)
                 y_new_start = tangent * x_new_start
             elif start_method == 'curve':
                 y_new_start = self.poly4d(x_new_start, *popt)
 
             if end_method == 'linear':
-                tangent = derivative(self.func_poly4d, x.max(), dx=1e-6)
+                tangent = derivative(self.func_poly4d, x.max(), dx=1e-3)
                 y_new_end = tangent * x_new_end
             elif end_method == 'curve':
                 y_new_end = self.poly4d(x_new_end, *popt)
@@ -158,7 +158,7 @@ class RBSC:
 
         return x_extended, y_extended
 
-    def get_curve_length(self, x_start, x_end, popt='poly4d', method='quad', n=100):
+    def get_curve_length(self, x_start, x_end, popt='poly4d', method='fixed_quad', n=50):
         params = None
         if popt == 'poly4d':
             params = self.popt_poly4d
@@ -168,7 +168,7 @@ class RBSC:
             return self.poly4d(x, *params)
 
         # 곡선의 도함수를 수치적으로 계산하여 길이를 구함
-        integrand = lambda x: np.sqrt(1 + derivative(fitted_curve, x, dx=1e-6) ** 2)
+        integrand = lambda x: np.sqrt(1 + derivative(fitted_curve, x, dx=1e-3) ** 2)
         # integrand = lambda x: np.sqrt(1 + self.dfdx_poly4d(x) ** 2)
 
         # length, _ = quad(integrand, x_start, x_end)
@@ -195,7 +195,7 @@ class RBSC:
             length_difference,
             bounds=(x_start, x_start + target_length),
             method='bounded',
-            options={'xatol': 1e-6}
+            options={'xatol': 1e-3}
         )
         return result.x
 
@@ -277,9 +277,9 @@ class RBSC:
     def get_joints(self):
         # ============= find junction points ============
         # 끝점의 기울기 - test
-        self.tip_tangent = derivative(self.func_poly4d, self.x1, dx=1e-6)
-        self.tip_angle_rad = np.arctan(self.tip_tangent)
-        self.tip_angle_deg = np.degrees(self.tip_angle_rad)
+        # self.tip_tangent = derivative(self.func_poly4d, self.x1, dx=1e-3)
+        # self.tip_angle_rad = np.arctan(self.tip_tangent)
+        # self.tip_angle_deg = np.degrees(self.tip_angle_rad)
         # print(f'tip_angle (deg) = {self.tip_angle_deg}')
 
         ###########################################################################
@@ -305,7 +305,7 @@ class RBSC:
         self.joint_y = self.func_poly4d(self.joint_x)
         self.joints_xy = np.column_stack((self.joint_x, self.joint_y))
 
-        self.joint_tangents = np.array([derivative(self.func_poly4d, x0, dx=1e-6) for x0 in self.joint_x])
+        self.joint_tangents = np.array([derivative(self.func_poly4d, x0, dx=1e-3) for x0 in self.joint_x])
         self.joint_angle = np.arctan(self.joint_tangents)
         self.joint_angle_degree = np.degrees(self.joint_angle)
 
