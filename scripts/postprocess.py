@@ -26,15 +26,9 @@ from scipy.integrate import quad, fixed_quad, quadrature
 from scipy.optimize import minimize
 from numpy.polynomial import Polynomial
 
-<<<<<<< HEAD
 import cProfile
-from findiff import FinDiff
 
-print(f"Current Working Directory : {os.getcwd()}")
-=======
-from ament_index_python.packages import get_package_share_directory
 print(f"Current Working Directory : {os.getcwd()}", flush=True)
->>>>>>> 74649c1de7f436a80016c0f9e7e6fbbaa9cc26d6
 
 image_path = '487_1723092780-883211914.png'
 # image_path = '302_1723092774-710305664.png'
@@ -68,8 +62,7 @@ class RBSC:
 
     def load_config(self, config_file):
 
-        package_share_directory = get_package_share_directory('estimation_pkg')
-        config_path = os.path.join(package_share_directory, config_file)
+        config_path = os.path.join(config_file)
         print(f'[postprocess.py] config.json PATH: {config_path}', flush=True)
         
         print(f'Load {config_file}', flush=True)
@@ -122,11 +115,7 @@ class RBSC:
 
     # 곡선 양끝에 n개의 점 추가
     # y값을 기존값 그대로 쓸수도 있고, curve함수에 의해 수학적으로 구해지는 y를 쓸 수도 있다.
-<<<<<<< HEAD
-    def extend_curve(self, x, y, popt, rate=0.8, start_method='linear', end_method='linear', replace='origin'):
-=======
     def extend_curve(self, x, y, popt, rate=0.8, start_method='linear', end_method='curve',replace='origin'):
->>>>>>> 74649c1de7f436a80016c0f9e7e6fbbaa9cc26d6
         """
         :param x: x values
         :param y: y values
@@ -191,7 +180,6 @@ class RBSC:
 
         return length
 
-<<<<<<< HEAD
     # def find_x_for_given_length(self, x_start, target_length, tol=1e-2):
     #     # 길이 차이를 구하는 함수 정의
     #     def length_difference(x_end):
@@ -210,10 +198,7 @@ class RBSC:
     #
     #     return x
 
-    # 주어진 곡선 길이에 대해 끝점을 찾는 함수
-=======
     # 주어진 곡선 길이에 대해 끝점(x1)을 찾는 함수
->>>>>>> 74649c1de7f436a80016c0f9e7e6fbbaa9cc26d6
     def find_x_for_given_length(self, x_start, target_length):
         # 곡선 길이를 계산한 후, 주어진 길이와의 차이를 반환하는 함수 정의
         def length_difference(x_end):
@@ -757,7 +742,6 @@ if __name__ == '__main__':
     rbsc.show()
 
     # img_dir = 'data/2024-08-08 experiment/2024-08-08-13-52-44 nopayload/images'
-<<<<<<< HEAD
     # dir_path = '../data/2024-08-08 experiment/2024-08-08-13-46-11 upper_init-X'
     # img_dir = os.path.join(dir_path, 'images')
     # images = [img for img in os.listdir(img_dir) if img.endswith(".png") or img.endswith(".jpg")]
@@ -774,7 +758,6 @@ if __name__ == '__main__':
     #     image = cv2.imread(image_path, cv2.IMREAD_COLOR)
     #     rbsc.postprocess(image)
     #     rbsc.plot_save(dir_name, image_name)
-=======
     img_dir = 'data/2024-08-08 experiment/2024-08-08-13-46-11 upper_init-X/images'
     images = [img for img in os.listdir(img_dir) if img.endswith(".png") or img.endswith(".jpg")]
     images = natsorted(images)
@@ -790,7 +773,6 @@ if __name__ == '__main__':
         image = cv2.imread(image_path, cv2.IMREAD_COLOR)
         rbsc.postprocess(image)
         rbsc.plot_save(dir_name)
->>>>>>> 74649c1de7f436a80016c0f9e7e6fbbaa9cc26d6
 
     # sampling time test
     n = 1
