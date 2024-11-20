@@ -128,7 +128,7 @@ class ExternalForceEstimationNode(Node):
     self.segment_angle = Float32MultiArray()
     self.segment_angle_subscriber = self.create_subscription(
         Float32MultiArray,
-        "estimated_segment_angle/relative",
+        "estimated_segment_angle/absolute",
         self.segment_angle_callback,
         QOS_RKL1V)
 
