@@ -67,14 +67,17 @@ def process(dir_path, rbsc: RBSC, do_LPF=True, do_curvefit=True):
         ## save LPF filtered .csv file
         csv_path = os.path.join(dir_path, 'data.csv')
 
-        ###
+        ### original
         data = pd.read_csv(csv_path)
+
+        ### LPF - f,t only
+        data_lpf = pd.read_csv(csv_path)
         columns_to_filter = ['fx', 'fy', 'fz', 'tx', 'ty', 'tz']
         for column in columns_to_filter:
-            filtered_values = low_pass_filter(data[column].values)
-            data[column] = filtered_values
+            filtered_values = low_pass_filter(data_lpf[column].values)
+            data_lpf[column] = filtered_values
 
-        ###
+        ### LPF - all data
         data_lpf_all = pd.read_csv(csv_path)
         columns_to_filter_temp = ['loadcell #0', 'loadcell #1', 'fx', 'fy', 'fz', 'tx', 'ty', 'tz']
         for column in columns_to_filter_temp:
@@ -99,23 +102,27 @@ def process(dir_path, rbsc: RBSC, do_LPF=True, do_curvefit=True):
             data_lpf_all[normalized_column_name] = scaler.fit_transform(scaled_value_all.reshape(-1, 1)).flatten()
 
         ###
+        # 오리지널 데이터 csv 이름 추가 저장
+        data_file_path = os.path.join(dir_path, 'data_' + upper_dir_name + '.csv')  # 필터링된 데이터 저장할 새로운 CSV 파일 경로
+
         # 필터링된 데이터를 새로운 CSV 파일로 저장
-        data_file_path = os.path.join(dir_path, 'data_LPF_' + upper_dir_name + '.csv')  # 필터링된 데이터 저장할 새로운 CSV 파일 경로
+        data_lpf_file_path = os.path.join(dir_path, 'data_LPF_' + upper_dir_name + '.csv')  # 필터링된 데이터 저장할 새로운 CSV 파일 경로
 
         ###
         # 필터링된 데이터를 새로운 CSV 파일로 저장
         data_lpf_all_file_path = os.path.join(dir_path, 'data_LPF_all_' + upper_dir_name + '.csv')  # 필터링된 데이터 저장할 새로운 CSV 파일 경로
 
         # 파일이 존재할 경우 사용자에게 확인 요청
-        if os.path.exists(data_file_path):
-            response = input(f"File {data_file_path} already exists.\nDo you want to overwrite it? (y/n): ")
+        if os.path.exists(data_lpf_file_path):
+            response = input(f"File {data_lpf_file_path} already exists.\nDo you want to overwrite it? (y/n): ")
             if response.lower() != 'y':
                 print("Operation cancelled.")
                 exit()
 
         data.to_csv(data_file_path, index=False)
+        data_lpf.to_csv(data_lpf_file_path, index=False)
         data_lpf_all.to_csv(data_lpf_all_file_path, index=False)
-        print(f"Filtered data saved to {data_file_path}")
+        print(f"Filtered data saved to {data_lpf_file_path}")
 
     if do_curvefit == True:
         # 이미지를 순차적으로 읽고 fitting 결과를 저장
@@ -194,20 +201,25 @@ def process(dir_path, rbsc: RBSC, do_LPF=True, do_curvefit=True):
 
 
 if __name__ == '__main__':
-    # define path of directory
-    base_dir = '../data/2024-10-10 experiment (0.35 mm) test'
-
-    # 이미지 프로세싱 클래스
     rbsc = RBSC()
-    # 최상위 폴더 내의 모든 하위 폴더를 탐색
-    subfolders = [os.path.join(base_dir, name) for name in os.listdir(base_dir)
-                  if os.path.isdir(os.path.join(base_dir, name))]
 
-    # dir_path = '../data/2024-10-10 experiment (0.35 mm)/2024-10-11-10-56-25 sine-dynamic'
-    # df_results = process(dir_path, rbsc)
+    # 폴더 하나만
+    dir_path = '../data/2024-11-15 experiment (0.35 mm)/2024-11-15-11-20-13 testset_dynamic'
+    df_results = process(dir_path, rbsc)
 
-    for dir_path in subfolders:
-        # 폴더 처리 및 결과 저장
-        df_results = process(dir_path, rbsc)
-        # 결과 출력
-        print(df_results)
+    # # define path of directory
+    # base_dir = '../data/2024-11-15 experiment (0.35 mm)'
+    #
+    # # 이미지 프로세싱 클래스
+    # rbsc = RBSC()
+    # # 최상위 폴더 내의 모든 하위 폴더를 탐색
+    # subfolders = [os.path.join(base_dir, name) for name in os.listdir(base_dir)
+    #               if os.path.isdir(os.path.join(base_dir, name))]
+
+    # for dir_path in subfolders:
+    #     # 폴더 처리 및 결과 저장
+    #     df_results = process(dir_path, rbsc)
+    #     # 결과 출력
+    #     print(df_results)
+
+    print(f'process finish')

@@ -349,7 +349,7 @@ class RBSC:
 
         '''
 
-    def postprocess(self, image, binary_thresh=127, filfinder_flag=False):
+    def postprocess(self, image, binary_thresh=100, filfinder_flag=False):
         try:
             # ========== post processing ==========
             # 1. read as grayscale

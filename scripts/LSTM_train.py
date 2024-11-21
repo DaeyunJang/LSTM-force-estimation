@@ -8,14 +8,14 @@ from tensorflow.python.layers.core import dropout
 
 # 여러 개의 CSV와 JSON 파일 경로를 지정합니다.
 # data_csv = sorted(glob('../datasets/train/data_LPF_*.csv'))
-data_csv = sorted(glob('../datasets/train/data_LPF_2*.csv'))
-curvefit_json = sorted(glob('../datasets/train/curve_fit_result-joint_angle_*.json'))
+data_csv = sorted(glob('../datasets/train/data_2*.csv'))
+joint_angle_json = sorted(glob('../datasets/train/curve_fit_result-joint_angle_*.json'))
 
 # 모든 CSV 파일을 읽어 리스트에 저장합니다.
 csv_dataframes = [pd.read_csv(file) for file in data_csv]
 
 # 모든 JSON 파일을 읽어 리스트에 저장합니다.
-json_dataframes = [pd.read_json(file) for file in curvefit_json]
+json_dataframes = [pd.read_json(file) for file in joint_angle_json]
 
 raw_dataframe = pd.concat([df for df in csv_dataframes])
 curvefit_dataframe = pd.concat([df for df in json_dataframes])

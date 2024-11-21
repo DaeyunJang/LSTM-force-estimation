@@ -57,7 +57,7 @@ def create_1d_cnn_model(input_shape):
 # 데이터 전처리
 def load_and_preprocess_data():
     # 여러 개의 CSV와 JSON 파일 경로를 지정합니다.
-    train_csv = sorted(glob('../datasets/train/data_LPF_2*.csv'))
+    train_csv = sorted(glob('../datasets/train/data_2*.csv'))
     curvefit_json = sorted(glob('../datasets/train/curve_fit_result-joint_angle_*.json'))
 
     # 모든 CSV 파일을 읽어 리스트에 저장합니다.
@@ -72,15 +72,15 @@ def load_and_preprocess_data():
     data_expanded = pd.concat([raw_dataframe, curvefit_dataframe], axis=1)
 
     # Curve fitting에서 Joint Angle 배열을 분리
-    column_size = len(data_expanded['Joint Angle'].iloc[0])
-    joint_angle = np.array(data_expanded['Joint Angle'].tolist())
-    joint_angle_df = pd.DataFrame(joint_angle, columns=[f'Joint Angle_{i}' for i in range(column_size)])
+    column_size = len(data_expanded['Joint Angles'].iloc[0])
+    joint_angle = np.array(data_expanded['Joint Angles'].tolist())
+    joint_angle_df = pd.DataFrame(joint_angle, columns=[f'Joint Angles_{i}' for i in range(column_size)])
 
     # 기존 데이터프레임과 Joint Angle 개별 열을 합침
     final_df = pd.concat([data_expanded.reset_index(drop=True), joint_angle_df], axis=1)
 
     # 입력과 출력 데이터 분리
-    input_columns = ['wire length #0', 'wire length #1', 'loadcell #0', 'loadcell #1'] + [f'Joint Angle_{i}' for i in range(column_size)]
+    input_columns = ['wire length #0', 'wire length #1', 'loadcell #0', 'loadcell #1'] + [f'Joint Angles_{i}' for i in range(column_size)]
     output_columns = ['fx', 'fy']
 
     x = final_df[input_columns].values
