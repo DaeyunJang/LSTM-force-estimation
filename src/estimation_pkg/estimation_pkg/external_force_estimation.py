@@ -176,8 +176,10 @@ class ExternalForceEstimationNode(Node):
 
         # input = np.array([ wl + lc + segment_angle])
         input = np.concatenate((wl, lc, segment_angle))
-        input_for_model = input.reshape((1, 12, 1))
-        predicted_normalized = self.model(input_for_model)
+        input_for_model = input.reshape(1,-1)     # (1,12)
+        input_for_model_normalized = self.scaler_x.transform(input_for_model)
+        input_for_model_final = np.expand_dims(input_for_model_normalized, axis=-1) # (1,12,1)
+        predicted_normalized = self.model(input_for_model_final)
         predicted_denormalized = self.scaler_y.inverse_transform(predicted_normalized)
 
         # self.get_logger().info(f'input data: {input_for_model}')
