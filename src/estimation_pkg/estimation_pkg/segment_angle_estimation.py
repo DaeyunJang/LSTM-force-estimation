@@ -217,6 +217,7 @@ class SegmentEstimationNode(Node):
     self.get_logger().info('Waiting the first curvefit process...')
     self.event.wait()
     self.get_logger().info('finish curvefit process. realtime_show start.')
+    # np.set_printoptions(threshold=np.inf)
 
     while rclpy.ok():
       if self.current_frame_flag:
@@ -224,12 +225,17 @@ class SegmentEstimationNode(Node):
           # if fitting prcoess is faster than image fps, use this.
           # cv2.imshow('Real-time Image with Joint Points and Arrows', self.rbsc.image_rgb_with_landmarks)
           # if fitting process is slower than image fps, use this.
-          landmark_image = self.rbsc.draw_arrows(self.current_frame_ROI)
+          landmark_image = self.current_frame_ROI.copy()
+          landmark_image = self.rbsc.draw_arrows(landmark_image)
           landmark_image_msg = self.br_rgb.cv2_to_imgmsg(landmark_image, 'bgr8')
           self.segment_angle_image_publisher.publish(landmark_image_msg)
 
-          segment_body_binary_image = self.rbsc.draw_arrows(self.rbsc.body_image)
-          segment_body_binary_image_msg = self.br_rgb.cv2_to_imgmsg(segment_body_binary_image, 'mono8')
+          overlay = self.current_frame_ROI.copy()
+          for y,x in self.rbsc.extended_yx_coords:
+            cv2.circle(overlay, (int(x), int(y)), 1, (100,200,255), -1)  # 중심, 반지름, 색상, 채우기
+          for y,x in self.rbsc.joint_yx_pixel:
+            cv2.circle(overlay, (int(x), int(y)), 3, (0, 0, 255), -1)  # 중심, 반지름, 색상, 채우기
+          segment_body_binary_image_msg = self.br_rgb.cv2_to_imgmsg(overlay, 'bgr8')
           self.segment_body_binary_image_publisher.publish(segment_body_binary_image_msg)
           
         except Exception as e:
