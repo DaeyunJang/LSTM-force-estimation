@@ -204,22 +204,22 @@ if __name__ == '__main__':
     rbsc = RBSC()
 
     # 폴더 하나만
-    dir_path = '../data/2024-11-15 experiment (0.35 mm)/2024-11-15-11-20-13 testset_dynamic'
-    df_results = process(dir_path, rbsc)
+    # dir_path = '../data/2024-11-15 experiment (0.35 mm)/2024-11-15-11-20-13 testset_dynamic'
+    # df_results = process(dir_path, rbsc)
 
-    # # define path of directory
-    # base_dir = '../data/2024-11-15 experiment (0.35 mm)'
-    #
-    # # 이미지 프로세싱 클래스
-    # rbsc = RBSC()
-    # # 최상위 폴더 내의 모든 하위 폴더를 탐색
-    # subfolders = [os.path.join(base_dir, name) for name in os.listdir(base_dir)
-    #               if os.path.isdir(os.path.join(base_dir, name))]
+    # define path of directory
+    base_dir = '../data/2024-12-06 external force test'
 
-    # for dir_path in subfolders:
-    #     # 폴더 처리 및 결과 저장
-    #     df_results = process(dir_path, rbsc)
-    #     # 결과 출력
-    #     print(df_results)
+    # 이미지 프로세싱 클래스
+    rbsc = RBSC()
+    # 최상위 폴더 내의 모든 하위 폴더를 탐색
+    subfolders = [os.path.join(base_dir, name) for name in os.listdir(base_dir)
+                  if os.path.isdir(os.path.join(base_dir, name))]
+
+    for dir_path in subfolders:
+        # 폴더 처리 및 결과 저장
+        df_results = process(dir_path, rbsc)
+        # 결과 출력
+        print(df_results)
 
     print(f'process finish')

@@ -62,7 +62,7 @@ def process(dir_path):
 
 if __name__ == '__main__':
     # define path of directory
-    base_dir = '../data/2024-10-10 experiment (0.35 mm) test'
+    base_dir = '../data/2024-12-06 external force test'
 
     # 이미지 프로세싱 클래스
     # 최상위 폴더 내의 모든 하위 폴더를 탐색

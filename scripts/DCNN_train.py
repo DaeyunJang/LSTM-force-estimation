@@ -15,20 +15,20 @@ from sklearn.model_selection import train_test_split
 import joblib
 import os
 
-save_dir = os.path.join('..', 'fit_DCNN')
+save_dir = os.path.join('..', 'fit', 'fit_DCNN')
 save_dir = os.path.join(save_dir, datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
 # 여러 개의 CSV와 JSON 파일 경로를 지정합니다.
-train_csv = sorted(glob('../datasets_0.4mm_legacy/train/data_LPF_2*.csv'))
-curvefit_json = sorted(glob('../datasets_0.4mm_legacy/train/curve_fit_result-joint_angle_*.json'))
+data_csv = sorted(glob('../datasets/train/data_2*.csv'))
+joint_angle_json = sorted(glob('../datasets/train/curve_fit_result-joint_angle_*.json'))
 
 # 모든 CSV 파일을 읽어 리스트에 저장합니다.
-csv_dataframes = [pd.read_csv(file) for file in train_csv]
+csv_dataframes = [pd.read_csv(file) for file in data_csv]
 
 # 모든 JSON 파일을 읽어 리스트에 저장합니다.
-json_dataframes = [pd.read_json(file) for file in curvefit_json]
+json_dataframes = [pd.read_json(file) for file in joint_angle_json]
 
 # 병합된 CSV와 JSON 데이터를 하나의 데이터프레임으로 병합합니다.
 raw_dataframe = pd.concat([df for df in csv_dataframes])
@@ -36,16 +36,16 @@ curvefit_dataframe = pd.concat([df for df in json_dataframes])
 data_expanded = pd.concat([raw_dataframe, curvefit_dataframe], axis=1)
 
 # Curve fitting에서 Joint Angle 배열을 분리
-column_size = len(data_expanded['Joint Angle'].iloc[0])
-joint_angle = np.array(data_expanded['Joint Angle'].tolist())
-joint_angle_df = pd.DataFrame(joint_angle, columns=[f'Joint Angle_{i}' for i in range(column_size)])
+column_size = len(data_expanded['Joint Angles'].iloc[0])
+joint_angle = np.array(data_expanded['Joint Angles'].tolist())
+joint_angle_df = pd.DataFrame(joint_angle, columns=[f'Joint Angles_{i}' for i in range(column_size)])
 
 # 기존 데이터프레임과 Joint Angle 개별 열을 합침
 final_df = pd.concat([data_expanded.reset_index(drop=True), joint_angle_df], axis=1)
 
 # 입력과 출력 데이터 분리
 input_columns = ['wire length #0', 'wire length #1', 'loadcell #0', 'loadcell #1']
-joint_angle_columns = [f'Joint Angle_{i}' for i in range(column_size)]
+joint_angle_columns = [f'Joint Angles_{i}' for i in range(column_size)]
 output_columns = ['fx', 'fy']
 
 x_non_joint_angle = final_df[input_columns].values

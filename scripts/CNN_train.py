@@ -9,7 +9,7 @@ import os
 from sklearn.model_selection import train_test_split
 
 # 모델 저장 디렉토리 설정
-save_dir = os.path.join('..', 'fit_CNN')
+save_dir = os.path.join('..', 'fit', 'fit_CNN')
 save_dir = os.path.join(save_dir, datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
@@ -57,7 +57,7 @@ def create_1d_cnn_model(input_shape):
 # 데이터 전처리
 def load_and_preprocess_data():
     # 여러 개의 CSV와 JSON 파일 경로를 지정합니다.
-    train_csv = sorted(glob('../datasets/train/data_2*.csv'))
+    train_csv = sorted(glob('../datasets/train/data_LPF_*.csv'))
     curvefit_json = sorted(glob('../datasets/train/curve_fit_result-joint_angle_*.json'))
 
     # 모든 CSV 파일을 읽어 리스트에 저장합니다.

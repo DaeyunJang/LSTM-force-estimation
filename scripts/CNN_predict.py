@@ -7,14 +7,14 @@ from glob import glob
 import datetime
 import os
 
-model_dir = os.path.join('..', 'fit_CNN', '20241121-095752')
+time_now =  datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
-save_dir = '../results_CNN'
+model_dir = os.path.join('..', 'fit', 'fit_CNN', '20241121-095752')
+save_dir = os.path.join('..', 'results', 'results_CNN')
+save_dir = os.path.join(save_dir, time_now)
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
-
-# 모델 불러오기 또는 새 모델 정의
 if os.path.exists(os.path.join(model_dir, 'cnn_model.h5')):
     model = tf.keras.models.load_model(os.path.join(model_dir, 'cnn_model.h5'), compile=False)
 else:
@@ -25,8 +25,8 @@ scaler_x = joblib.load(os.path.join(model_dir, 'scaler_x.pkl'))
 scaler_y = joblib.load(os.path.join(model_dir, 'scaler_y.pkl'))
 
 # 여러 개의 테스트용 CSV와 JSON 파일 경로를 지정합니다.
-test_csv = sorted(glob('../datasets/test/data_LPF_2*.csv'))
-test_json = sorted(glob('../datasets/test/curve_fit_result-joint_angle_*.json'))
+test_csv = sorted(glob('../datasets_20241206-realworld/test/data_2*.csv'))
+test_json = sorted(glob('../datasets_20241206-realworld/test/curve_fit_result-joint_angle_*.json'))
 
 # 모든 CSV 파일을 읽어 리스트에 저장합니다.
 csv_test_dataframes = [pd.read_csv(file) for file in test_csv]
@@ -67,7 +67,8 @@ results_df = final_test_df[output_columns].copy()
 results_df[['pred_fx', 'pred_fy']] = predicted_original
 
 # 결과를 CSV 파일로 저장
-save_dir = '../results_CNN/predicted_results_with_original_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv'
-results_df.to_csv(save_dir, index=False)
+save_file = os.path.join(save_dir, 'predicted_results_with_original_' + time_now + '.csv')
+results_df.to_csv(save_file, index=False)
+final_test_df.to_csv(os.path.join(save_dir, 'dataframe_' + time_now + '.csv'), index=False)
 
 print("예측값이 'predicted_results.csv' 파일에 저장되었습니다.")

@@ -7,8 +7,11 @@ from glob import glob
 import datetime
 import os
 
-model_dir = os.path.join('..', 'model')
-save_dir = '../results'
+
+time_now =  datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+model_dir = os.path.join('..', 'fit', 'fit_LSTM', '20241222-210105')
+save_dir = os.path.join('..', 'results', 'results_LSTM')
+save_dir = os.path.join(save_dir, time_now)
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
@@ -20,8 +23,8 @@ scaler_x = joblib.load(os.path.join(model_dir, 'scaler_x.pkl'))
 scaler_y = joblib.load(os.path.join(model_dir, 'scaler_y.pkl'))
 
 # 여러 개의 테스트용 CSV와 JSON 파일 경로를 지정합니다.
-test_csv = sorted(glob('../datasets/test/data_2*.csv'))
-test_json = sorted(glob('../datasets/test/curve_fit_result-joint_angle_*.json'))
+test_csv = sorted(glob('../datasets_20241206-realworld/test/data_2*.csv'))
+test_json = sorted(glob('../datasets_20241206-realworld/test/curve_fit_result-joint_angle_*.json'))
 # 모든 CSV 파일을 읽어 리스트에 저장합니다.
 csv_test_dataframes = [pd.read_csv(file) for file in test_csv]
 
@@ -78,7 +81,9 @@ results_df = final_test_df[output_columns].copy()
 results_df[['pred_fx', 'pred_fy']] = predicted_original
 
 # 결과를 CSV 파일로 저장
-save_dir = '../results/predicted_results_with_original_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv'
-results_df.to_csv(save_dir, index=False)
+time_now =  datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+save_file = os.path.join(save_dir, 'predicted_results_with_original_' + time_now + '.csv')
+results_df.to_csv(save_file, index=False)
+final_test_df.to_csv(os.path.join(save_dir, 'dataframe_' + time_now + '.csv'), index=False)
 
-print(f"예측값이 {save_dir} 파일에 저장되었습니다.")
+print(f"예측값이 {save_file} 파일에 저장되었습니다.")

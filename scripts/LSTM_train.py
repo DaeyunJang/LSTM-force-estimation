@@ -47,7 +47,7 @@ import os, sys
 
 print(tf.config.list_physical_devices('GPU'))
 
-save_dir = '../fit'
+save_dir = os.path.join('..', 'fit', 'fit_LSTM')
 save_dir = os.path.join(save_dir, datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
@@ -126,15 +126,15 @@ model.save(os.path.join(save_dir, 'lstm_model.h5'))
 predicted = model.predict(x_valid)
 
 # 결과 역정규화
-predicted_original = scaler_y.inverse_transform(predicted)
-y_val_original = scaler_y.inverse_transform(y_valid)
+predicted_value = scaler_y.inverse_transform(predicted)
+original_value = scaler_y.inverse_transform(y_valid)
 
 # 예측값 및 실제값 저장
-np.savetxt(save_dir + '/predicted_original.csv', predicted_original, delimiter=',')
-np.savetxt(save_dir + '/y_val_original.csv', y_val_original, delimiter=',')
+np.savetxt(save_dir + '/predicted_value.csv', predicted_value, delimiter=',')
+np.savetxt(save_dir + '/original_value.csv', original_value, delimiter=',')
 
-print("예측값:", predicted_original)
-print("실제값:", y_val_original)
+print("예측값:", predicted_value)
+print("실제값:", original_value)
 
 ###################################################################################
 # 저장된 모델 로드 예제
