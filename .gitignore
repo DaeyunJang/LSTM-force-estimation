@@ -6,6 +6,7 @@ data
 images_with_arrow_*
 scripts/videos
 fit*
+results*
 
 # Ignore Python bytecode and cache files
 **/__pycache__

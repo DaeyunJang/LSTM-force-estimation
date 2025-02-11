@@ -44,7 +44,7 @@ class ExternalForceEstimationNode(Node):
     
     package_share_directory = get_package_share_directory('estimation_pkg')
 
-    model_path = os.path.join(package_share_directory, 'lstm_model.h5')
+    model_path = os.path.join(package_share_directory, 'lstm_model_legacy.h5')
     self.declare_parameter('model_path', model_path)
     self.model_path = self.get_parameter('model_path').get_parameter_value().string_value
 
@@ -64,17 +64,17 @@ class ExternalForceEstimationNode(Node):
     self.scaler_y_path = self.get_parameter('scaler_y_path').get_parameter_value().string_value
 
 
-    print(f'[external_force_estimation.py] lstm_model.h5 PATH: {model_path}', flush=True)
+    print(f'[external_force_estimation.py] lstm_model_legacy.h5 PATH: {model_path}', flush=True)
     print(f'[external_force_estimation.py] scaler_x.pkl PATH: {scaler_x_path}', flush=True)
     print(f'[external_force_estimation.py] scaler_y.pkl PATH: {scaler_y_path}', flush=True)
-    print(f'[external_force_estimation.py] lstm_model.h5 PATH: {self.model_path}', flush=True)
+    print(f'[external_force_estimation.py] lstm_model_legacy.h5 PATH: {self.model_path}', flush=True)
     print(f'[external_force_estimation.py] scaler_x.pkl PATH: {self.scaler_x_path}', flush=True)
     print(f'[external_force_estimation.py] scaler_y.pkl PATH: {self.scaler_y_path}', flush=True)
 
     self.declare_parameter('input_output_monitor', False)
     
     self.model = tf.keras.models.load_model(self.model_path)
-    # self.model = tf.keras.models.load_model('model/lstm_model.h5')
+    # self.model = tf.keras.models.load_model('model/lstm_model_legacy.h5')
 
     # 스케일러 불러오기
     self.scaler_x = joblib.load(self.scaler_x_path)

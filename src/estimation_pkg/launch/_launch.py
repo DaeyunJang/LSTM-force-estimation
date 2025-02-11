@@ -35,7 +35,7 @@ def generate_launch_description():
     print(f'rqt_perspective_file_path={rqt_perspective_file_path}')
     # rqt_command = ['rqt', '-p', rqt_perspective_file_path]
 
-    lstm_model_path = os.path.join(estimation_pkg_dir, 'lstm_model.h5')
+    lstm_model_path = os.path.join(estimation_pkg_dir, 'lstm_model_legacy.h5')
     scaler_x_path = os.path.join(estimation_pkg_dir, 'scaler_x.pkl')
     sclaer_y_path = os.path.join(estimation_pkg_dir, 'scaler_y.pkl')
 

@@ -109,7 +109,7 @@ loss, mae = model.evaluate(x_val, y_val, verbose=1)
 print(f'Validation Loss: {loss}, Validation MAE: {mae}')
 
 # 모델 저장
-model.save(os.path.join(save_dir, 'lstm_model.h5'))
+model.save(os.path.join(save_dir, 'lstm_model_legacy.h5'))
 
 # 예측
 predicted = model.predict(x_val)
@@ -127,8 +127,8 @@ print("실제값:", y_val_original)
 
 ###################################################################################
 # 저장된 모델 로드 예제
-loaded_model = tf.keras.models.load_model(os.path.join(save_dir, 'lstm_model.h5'))
-# loaded_model = tf.keras.models.load_model('../fit/20240919-144705/lstm_model.h5')
+loaded_model = tf.keras.models.load_model(os.path.join(save_dir, 'lstm_model_legacy.h5'))
+# loaded_model = tf.keras.models.load_model('../fit/20240919-144705/lstm_model_legacy.h5')
 
 # 로드된 모델로 예측
 loaded_predicted = loaded_model.predict(x_val)

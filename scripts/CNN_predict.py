@@ -25,8 +25,8 @@ scaler_x = joblib.load(os.path.join(model_dir, 'scaler_x.pkl'))
 scaler_y = joblib.load(os.path.join(model_dir, 'scaler_y.pkl'))
 
 # 여러 개의 테스트용 CSV와 JSON 파일 경로를 지정합니다.
-test_csv = sorted(glob('../datasets_20241206-realworld/test/data_2*.csv'))
-test_json = sorted(glob('../datasets_20241206-realworld/test/curve_fit_result-joint_angle_*.json'))
+test_csv = sorted(glob('../datasets_20241206-realworld2/test/data_2*.csv'))
+test_json = sorted(glob('../datasets_20241206-realworld2/test/curve_fit_result-joint_angle_*.json'))
 
 # 모든 CSV 파일을 읽어 리스트에 저장합니다.
 csv_test_dataframes = [pd.read_csv(file) for file in test_csv]

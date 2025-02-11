@@ -11,7 +11,7 @@ model_dir = os.path.join('..', 'model')
 save_dir = '../results_0.4mm/predicted_results_with_original_' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.csv'
 
 # 모델 불러오기
-model = tf.keras.models.load_model(os.path.join(model_dir, 'lstm_model.h5'))
+model = tf.keras.models.load_model(os.path.join(model_dir, 'lstm_model_legacy.h5'))
 
 # 스케일러 불러오기
 scaler_x = joblib.load(os.path.join(model_dir, 'scaler_x.pkl'))

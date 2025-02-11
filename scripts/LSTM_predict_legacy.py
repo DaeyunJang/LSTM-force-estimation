@@ -13,7 +13,7 @@ if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
 # 모델 불러오기
-model = tf.keras.models.load_model(os.path.join(model_dir, 'lstm_model.h5'))
+model = tf.keras.models.load_model(os.path.join(model_dir, 'lstm_model_legacy.h5'))
 
 # 스케일러 불러오기
 scaler_x = joblib.load(os.path.join(model_dir, 'scaler_x.pkl'))

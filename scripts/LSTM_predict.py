@@ -9,7 +9,8 @@ import os
 
 
 time_now =  datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-model_dir = os.path.join('..', 'fit', 'fit_LSTM', '20241222-210105')
+# model_dir = os.path.join('..', 'fit', 'fit_LSTM', '20241222-210105')
+model_dir = os.path.join('..', 'model', 'real 모델')
 save_dir = os.path.join('..', 'results', 'results_LSTM')
 save_dir = os.path.join(save_dir, time_now)
 if not os.path.exists(save_dir):
@@ -25,6 +26,7 @@ scaler_y = joblib.load(os.path.join(model_dir, 'scaler_y.pkl'))
 # 여러 개의 테스트용 CSV와 JSON 파일 경로를 지정합니다.
 test_csv = sorted(glob('../datasets_20241206-realworld/test/data_2*.csv'))
 test_json = sorted(glob('../datasets_20241206-realworld/test/curve_fit_result-joint_angle_*.json'))
+
 # 모든 CSV 파일을 읽어 리스트에 저장합니다.
 csv_test_dataframes = [pd.read_csv(file) for file in test_csv]
 
