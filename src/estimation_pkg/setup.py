@@ -16,6 +16,7 @@ setup(
         (os.path.join('share', package_name), ['estimation_pkg/config_ROI_ref.json']),
         # (os.path.join('share', package_name, 'config'), glob('config/*.perspective')),
         (os.path.join('share', package_name), ['config/rqt_perspective/rqt_setting.perspective']),
+        # location of .h5 model is LSTM-force-estimation/src/estimation_pkg/ (not LSTM-force-estimation/model)
         (os.path.join('share', package_name), ['model/lstm_model_legacy.h5']),
         (os.path.join('share', package_name), ['model/scaler_x.pkl']),
         (os.path.join('share', package_name), ['model/scaler_y.pkl']),
