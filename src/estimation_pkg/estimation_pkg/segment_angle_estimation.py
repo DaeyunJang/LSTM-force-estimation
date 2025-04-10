@@ -6,7 +6,7 @@ from rclpy.qos import QoSDurabilityPolicy
 from rclpy.qos import QoSHistoryPolicy
 from rclpy.qos import QoSReliabilityPolicy
 
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Float64MultiArray
 from geometry_msgs.msg import Vector3
 from geometry_msgs.msg import Twist
 from rclpy.clock import Clock
@@ -98,22 +98,22 @@ class SegmentEstimationNode(Node):
 
     ###
     self.segment_angle_publisher = self.create_publisher(
-       Float32MultiArray,
+       Float64MultiArray,
        "estimated_segment_angle/absolute",
        QOS_RKL10V
     )
     self.segment_angle_relative_publisher = self.create_publisher(
-       Float32MultiArray,
+       Float64MultiArray,
        "estimated_segment_angle/relative",
        QOS_RKL10V
     )
     self.segment_angular_velocity_publisher = self.create_publisher(
-       Float32MultiArray,
+       Float64MultiArray,
        "estimated_segment_angular_velocity/absolute",
        QOS_RKL10V
     )
     self.segment_angular_velocity_relative_publisher = self.create_publisher(
-       Float32MultiArray,
+       Float64MultiArray,
        "estimated_segment_angular_velocity/relative",
        QOS_RKL10V
     )
@@ -185,17 +185,17 @@ class SegmentEstimationNode(Node):
             self.segment_angular_velocity = np.zeros(self.segment_angle.shape)
             self.segment_angular_velocity_relative = np.zeros(self.segment_angle_relative.shape)
 
-          msg = Float32MultiArray()
+          msg = Float64MultiArray()
           msg.data = self.segment_angle.tolist()
           self.segment_angle_publisher.publish(msg)
-          msg = Float32MultiArray()
+          msg = Float64MultiArray()
           msg.data = self.segment_angle_relative.tolist()
           self.segment_angle_relative_publisher.publish(msg)
 
-          msg_omega = Float32MultiArray()
+          msg_omega = Float64MultiArray()
           msg_omega.data = self.segment_angular_velocity.tolist()
           self.segment_angular_velocity_publisher.publish(msg_omega)
-          msg_omega = Float32MultiArray()
+          msg_omega = Float64MultiArray()
           msg_omega.data = self.segment_angular_velocity_relative.tolist()
           self.segment_angular_velocity_relative_publisher.publish(msg_omega)
 

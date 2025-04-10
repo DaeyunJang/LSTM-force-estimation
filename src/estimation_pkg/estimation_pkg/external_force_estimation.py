@@ -9,7 +9,7 @@ from rclpy.qos import QoSReliabilityPolicy
 from rclpy.parameter import Parameter
 from rcl_interfaces.msg import SetParametersResult
 
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Float64MultiArray
 from std_msgs.msg import Header
 from std_msgs.msg import Bool
 from geometry_msgs.msg import Vector3
@@ -116,18 +116,18 @@ class ExternalForceEstimationNode(Node):
 
     
     self.wire_length_flag = False
-    self.wire_length = Float32MultiArray()
+    self.wire_length = Float64MultiArray()
     self.wire_length_subscriber = self.create_subscription(
-        Float32MultiArray,
+        Float64MultiArray,
         'wire_length',
         self.read_wire_length,
         QOS_RKL1V
     )
     self.get_logger().info('wire_length subscriber is created.')
     
-    self.segment_angle = Float32MultiArray()
+    self.segment_angle = Float64MultiArray()
     self.segment_angle_subscriber = self.create_subscription(
-        Float32MultiArray,
+        Float64MultiArray,
         "estimated_segment_angle/absolute",
         self.segment_angle_callback,
         QOS_RKL1V)

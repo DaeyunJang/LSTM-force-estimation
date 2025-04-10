@@ -340,7 +340,7 @@
             "plugin": {
               "keys": {
                 "publishers": {
-                  "repr": "\"[{'topic_name': '/loadcell_state', 'type_name': 'custom_interfaces/msg/LoadcellState', 'rate': 30.0, 'enabled': False, 'publisher_id': 0, 'counter': 0, 'expressions': {}}, {'topic_name': '/wire_length', 'type_name': 'std_msgs/msg/Float32MultiArray', 'rate': 30.0, 'enabled': False, 'publisher_id': 1, 'counter': 0, 'expressions': {}}]\"",
+                  "repr": "\"[{'topic_name': '/loadcell_state', 'type_name': 'custom_interfaces/msg/LoadcellState', 'rate': 30.0, 'enabled': False, 'publisher_id': 0, 'counter': 0, 'expressions': {}}, {'topic_name': '/wire_length', 'type_name': 'std_msgs/msg/Float64MultiArray', 'rate': 30.0, 'enabled': False, 'publisher_id': 1, 'counter': 0, 'expressions': {}}]\"",
                   "type": "repr"
                 }
               },
