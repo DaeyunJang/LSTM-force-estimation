@@ -226,6 +226,16 @@ class SegmentEstimationNode(Node):
           # cv2.imshow('Real-time Image with Joint Points and Arrows', self.rbsc.image_rgb_with_landmarks)
           # if fitting process is slower than image fps, use this.
           landmark_image = self.current_frame_ROI.copy()
+          
+          # Reference coordinate system (X-axis: Up, Y-axis: Left)
+          origin = (60, 60)
+          x_axis_end = (60, 20)
+          y_axis_end = (20, 60)
+          cv2.arrowedLine(landmark_image, origin, x_axis_end, (0, 0, 255), 2, tipLength=0.3)  # 초록색 X축
+          cv2.arrowedLine(landmark_image, origin, y_axis_end, (0, 255, 0), 2, tipLength=0.3)  # 파란색 Y축
+          cv2.putText(landmark_image, 'X', (45, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2, cv2.LINE_AA)
+          cv2.putText(landmark_image, 'Y', (5, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2, cv2.LINE_AA)
+          
           landmark_image = self.rbsc.draw_arrows(landmark_image)
           landmark_image_msg = self.br_rgb.cv2_to_imgmsg(landmark_image, 'bgr8')
           self.segment_angle_image_publisher.publish(landmark_image_msg)
