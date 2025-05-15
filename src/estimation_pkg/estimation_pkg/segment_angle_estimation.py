@@ -240,7 +240,8 @@ class SegmentEstimationNode(Node):
           landmark_image_msg = self.br_rgb.cv2_to_imgmsg(landmark_image, 'bgr8')
           self.segment_angle_image_publisher.publish(landmark_image_msg)
 
-          overlay = self.current_frame_ROI.copy()
+          # overlay = self.current_frame_ROI.copy()
+          overlay = self.rbsc.cleaned_image
           for y,x in self.rbsc.extended_yx_coords:
             cv2.circle(overlay, (int(x), int(y)), 1, (100,200,255), -1)  # 중심, 반지름, 색상, 채우기
           for y,x in self.rbsc.joint_yx_pixel:

@@ -343,7 +343,38 @@ class RBSC:
             if image is None or image.size == 0:
                 # print("Error: image : {image}")
                 return
-            self.gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            
+            # 2. 색상 제거 전처리: HSV 색공간 변환
+            hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+            # 붉은색 범위 지정 (두 구간으로 나눔)
+            lower_red1 = np.array([0, 50, 50])   # BGR에서 R이 강하고 B나 G가 상대적으로 작음
+            upper_red1 = np.array([255, 220, 220])
+            # lower_red1 = np.array([0, 50, 50])
+            # upper_red1 = np.array([50, 200, 200])
+            # lower_red2 = np.array([100, 10, 10])
+            # upper_red2 = np.array([200, 255, 255])
+            
+            # 파란색 범위 지정
+            lower_blue = np.array([100, 70, 50])
+            upper_blue = np.array([130, 255, 255])
+
+            # 마스크 생성
+            # mask_red = cv2.inRange(hsv, lower_red1, upper_red1) | cv2.inRange(hsv, lower_red2, upper_red2)
+            mask_red = cv2.inRange(hsv, lower_red1, upper_red1)
+            mask_blue = cv2.inRange(hsv, lower_blue, upper_blue)
+
+            # 전체 마스크: 붉은색 또는 파란색
+            mask = mask_red | mask_blue
+
+            # 원본 이미지에서 해당 색상 제거 (검정색으로 덮기)
+            image_cleaned = image.copy()
+            image_cleaned[mask > 0] = (0, 0, 0)
+            self.cleaned_image = image_cleaned
+            # cv2.imwrite("image_clean.jpg", image_cleaned)
+            # 3. Grayscale 변환
+            self.gray_image = cv2.cvtColor(image_cleaned, cv2.COLOR_BGR2GRAY)
+            # self.gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             # self.gray_image = cv2.imread(self.image_path, cv2.IMREAD_GRAYSCALE)
             self.image_w, self.image_h = self.gray_image.shape[1], self.gray_image.shape[0]
 
