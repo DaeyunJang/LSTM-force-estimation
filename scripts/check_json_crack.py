@@ -2,7 +2,7 @@ import os
 import json
 import glob
 
-BASE_DIR = r"..\datasets\train"
+BASE_DIR = r"../datasets_0102_shuffle/train"
 json_files = sorted(glob.glob(os.path.join(BASE_DIR, "curve_fit_result-joint_angle_*.json")))
 
 print(f"Total JSON files: {len(json_files)}\n")
