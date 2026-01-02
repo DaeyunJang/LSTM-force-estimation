@@ -10,7 +10,7 @@ import astropy.units as u
 from scipy.optimize import curve_fit, OptimizeWarning
 from numpy.polynomial import Polynomial
 
-image_path = '487_1723092780-883211914.png'
+image_path = '14_1733363817-954585449.png'
 
 
 class RBSC:
@@ -32,7 +32,7 @@ class RBSC:
         return (a * x ** 4 + b * x ** 3 + c * x ** 2 + d * x) + L / (1 + np.exp(exp_term))
         # return (a * x **2 + b * x) + L / (1 + np.exp(-k * (x - x0)))
 
-    def postprocess(self, image_path, binary_thresh=127):
+    def postprocess(self, image_path, binary_thresh=100):
         # 이미지 파일 경로
         image_path = image_path
 
@@ -75,6 +75,7 @@ class RBSC:
 
         ####################################################################
 
+        self.largest_backbone_image = np.copy(self.skeleton)
 
         # 흰색 선이 존재하는 영역을 찾기
         coords = np.column_stack(np.where(self.largest_backbone_image > 0))
@@ -180,19 +181,39 @@ class RBSC:
         plt.figure(figsize=(10,5))
         plt.subplot(2, 3, 1)
         plt.scatter(self.xy_coords[:, 0], self.xy_coords[:, 1], color='blue', s=1, label='Original data')
-        plt.title('Data unit pixel size')
+        plt.title('Data in pixel coordinate')
         plt.axis('scaled')
+        plt.axvline(x=0, c="gray", label="x=0")
+        plt.axhline(y=0, c="gray", label="y=0")
+        plt.grid(linestyle='--')
+        plt.xlabel('X')
+        plt.ylabel('Y')
+
         # plt.axis('equal')
 
         plt.subplot(2, 3, 2)
-        plt.scatter(self.norm_xy_coords[:, 0], self.norm_xy_coords[:, 1], color='red', s=1, label='Normalized data')
+        plt.scatter(self.norm_xy_coords[:, 0], self.norm_xy_coords[:, 1], color='black', s=1, label='Normalized data')
         plt.title('Normalized data')
         plt.axis('scaled')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.xlim([-0.8, 0.8])
+        plt.ylim([-0.1, 1.1])
+        plt.axvline(x=0, c="gray", label="x=0")
+        plt.axhline(y=0, c="gray", label="y=0")
+        plt.grid(linestyle='--')
 
         plt.subplot(2, 3, 3)
-        plt.scatter(self.new_norm_xy_coords[:, 0], self.new_norm_xy_coords[:, 1], color='black', s=1, label='Normalized data')
-        plt.title('Translation to origin data')
+        plt.scatter(self.new_norm_xy_coords[:, 0], self.new_norm_xy_coords[:, 1], color='black', s=0.1, label='Normalized data')
+        plt.title('Normalized data (translation to origin)')
         plt.axis('scaled')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.xlim([-0.8, 0.8])
+        plt.ylim([-0.1, 1.1])
+        plt.axvline(x=0, c="gray", label="x=0")
+        plt.axhline(y=0, c="gray", label="y=0")
+        plt.grid(linestyle='--')
 
         plt.subplot(2, 3, 4)
         plt.scatter(self.new_norm_xy_coords[:, 0], self.new_norm_xy_coords[:, 1], color='black', s=4, label='Normalized Data')
@@ -206,8 +227,8 @@ class RBSC:
         plt.axis('scaled')
 
         plt.subplot(2, 3, 6)
-        plt.scatter(self.trans_xy_coords[:, 0], self.trans_xy_coords[:, 1], color='green', s=4)
-        plt.plot(self.trans_xy_coords[:, 0], self.fitted_y_poly4d, label='Fitted Curve', color='purple')
+        # plt.scatter(self.trans_xy_coords[:, 0], self.trans_xy_coords[:, 1], color='green', s=4)
+        plt.plot(self.trans_xy_coords[:, 0], self.fitted_y_poly4d, label='Fitted Curve', color='red')
         plt.title('Curve fitting on transpose XY to YX data')
         plt.axis('scaled')
 

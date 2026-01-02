@@ -41,7 +41,7 @@ final_test_df = pd.concat([test_data_expanded.reset_index(drop=True), coefficien
 
 # 입력 데이터 분리
 input_columns = ['wire length #0', 'wire length #1', 'loadcell #0', 'loadcell #1'] + [f'Coefficients_{i}' for i in range(coeff_size)]
-output_columns = ['fx', 'fy']
+output_columns = ['fx_kalman', 'fy_kalman']
 
 x_test = final_test_df[input_columns].values
 x_test_normalized = scaler_x.transform(x_test)

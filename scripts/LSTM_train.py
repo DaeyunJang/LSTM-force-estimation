@@ -8,7 +8,7 @@ from tensorflow.python.layers.core import dropout
 
 # 여러 개의 CSV와 JSON 파일 경로를 지정합니다.
 # data_csv = sorted(glob('../datasets/train/data_LPF_*.csv'))
-data_csv = sorted(glob('../datasets/train/data_2*.csv'))
+data_csv = sorted(glob('../datasets/train/data_*.csv'))
 joint_angle_json = sorted(glob('../datasets/train/curve_fit_result-joint_angle_*.json'))
 
 # 모든 CSV 파일을 읽어 리스트에 저장합니다.
@@ -23,11 +23,15 @@ curvefit_dataframe = pd.concat([df for df in json_dataframes])
 # 병합된 CSV와 JSON 데이터를 하나의 데이터프레임으로 병합합니다.
 data_expanded = pd.concat([raw_dataframe, curvefit_dataframe], axis=1)
 
+print(type(data_expanded['Joint Angle'].iloc[0]))
+print(data_expanded['Joint Angle'].iloc[0])
+print(getattr(data_expanded['Joint Angle'].iloc[0], "__len__", None))
+
 # Curve fitting에서 Joint Angle 배열을 분리
-column_size = len(data_expanded['Joint Angles'].iloc[0])
+column_size = len(data_expanded['Joint Angle'].iloc[0])
 # Joint Angle 배열을 개별 열로 변환
-joint_angle = np.array(data_expanded['Joint Angles'].tolist())
-joint_angle_df = pd.DataFrame(joint_angle, columns=[f'Joint Angles_{i}' for i in range(column_size)])
+joint_angle = np.array(data_expanded['Joint Angle'].tolist())
+joint_angle_df = pd.DataFrame(joint_angle, columns=[f'Joint Angle_{i}' for i in range(column_size)])
 # 기존 데이터프레임과 Joint Angle 개별 열을 합침
 final_df = pd.concat([data_expanded.reset_index(drop=True), joint_angle_df], axis=1)
 
@@ -55,8 +59,8 @@ if not os.path.exists(save_dir):
 # 입력과 출력 데이터 분리
 # joint angles are not normalized before (from `save_image_curvefit_params_csv_json.py`)
 # normalized data
-input_columns = ['wire length #0', 'wire length #1', 'loadcell #0', 'loadcell #1'] + [f'Joint Angles_{i}' for i in range(column_size)]
-output_columns = ['fx', 'fy']
+input_columns = ['wire length #0', 'wire length #1', 'loadcell #0', 'loadcell #1'] + [f'Joint Angle_{i}' for i in range(column_size)]
+output_columns = ['fx_kalman', 'fy_kalman']
 
 x = final_df[input_columns].values
 y = final_df[output_columns].values
@@ -120,7 +124,7 @@ loss, mae = model.evaluate(x_valid, y_valid, verbose=1)
 print(f'Validation Loss: {loss}, Validation MAE: {mae}')
 
 # 모델 저장
-model.save(os.path.join(save_dir, 'lstm_model_legacy.h5'))
+model.save(os.path.join(save_dir, 'lstm_model.h5'))
 
 # 예측
 predicted = model.predict(x_valid)

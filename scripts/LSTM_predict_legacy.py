@@ -44,7 +44,7 @@ final_test_df = pd.concat([test_data_expanded.reset_index(drop=True), coefficien
 # 입력 데이터 분리
 input_non_joint_angle_columns = ['wire length #0', 'wire length #1', 'loadcell #0', 'loadcell #1']
 input_joint_angle_columns = [f'Joint Angle_{i}' for i in range(coeff_size)]
-output_columns = ['fx', 'fy']
+output_columns = ['fx_kalman', 'fy_kalman']
 
 x_test_non_joint_angle = final_test_df[input_non_joint_angle_columns].values
 x_test_joint_angle = final_test_df[input_joint_angle_columns].values

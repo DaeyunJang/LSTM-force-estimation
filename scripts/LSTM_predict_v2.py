@@ -7,22 +7,25 @@ from glob import glob
 import datetime
 import os
 
+
 time_now =  datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-model_dir = os.path.join('..', 'fit', 'fit_Transformer', '20241222-230434')
-save_dir = os.path.join('..', 'results', 'results_Transformer')
+model_dir = os.path.join('..', 'fit', 'fit_LSTM_v2_huber', '20260102-164204')
+# model_dir = os.path.join('..', 'model', 'legacy')
+save_dir = os.path.join('..', 'results', 'results_LSTM_v2_huber')
 save_dir = os.path.join(save_dir, time_now)
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
-model = tf.keras.models.load_model(os.path.join(model_dir, 'Transformer_model.keras'))
+# 모델 불러오기
+model = tf.keras.models.load_model(os.path.join(model_dir, 'lstm_model.h5'))
 
 # 스케일러 불러오기
 scaler_x = joblib.load(os.path.join(model_dir, 'scaler_x.pkl'))
 scaler_y = joblib.load(os.path.join(model_dir, 'scaler_y.pkl'))
 
 # 여러 개의 테스트용 CSV와 JSON 파일 경로를 지정합니다.
-test_csv = sorted(glob('../datasets2/test/data_*.csv'))
-test_json = sorted(glob('../datasets2/test/curve_fit_result-joint_angle_*.json'))
+test_csv = sorted(glob('../datasets_0102/test/data_*.csv'))
+test_json = sorted(glob('../datasets_0102/test/curve_fit_result-joint_angle_*.json'))
 
 # 모든 CSV 파일을 읽어 리스트에 저장합니다.
 csv_test_dataframes = [pd.read_csv(file) for file in test_csv]
@@ -51,9 +54,9 @@ test_data_expanded = pd.concat([test_raw_dataframe, test_curvefit_dataframe], ax
 #############################################################################
 
 # Curve fitting에서 Joint Angle 배열을 분리
-column_size = len(test_data_expanded['Joint Angles'].iloc[0])
+column_size = len(test_data_expanded['Joint Angle'].iloc[0])
 # Joint Angle 배열을 개별 열로 변환
-joint_angle = np.array(test_data_expanded['Joint Angles'].tolist())
+joint_angle = np.array(test_data_expanded['Joint Angle'].tolist())
 joint_angle_df = pd.DataFrame(joint_angle, columns=[f'Joint Angle_{i}' for i in range(column_size)])
 # 기존 데이터프레임과 Joint Angle 개별 열을 합침
 final_test_df = pd.concat([test_data_expanded.reset_index(drop=True), joint_angle_df], axis=1)

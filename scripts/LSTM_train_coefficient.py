@@ -56,7 +56,7 @@ if not os.path.exists(save_dir):
 # joint angles are not normalized before (from `save_image_curvefit_params_csv_json.py`)
 # normalized data
 input_columns = ['wire length #0', 'wire length #1', 'loadcell #0', 'loadcell #1'] + [f'Coefficients_{i}' for i in range(column_size)]
-output_columns = ['fx', 'fy']
+output_columns = ['fx_kalman', 'fy_kalman']
 x = final_df[input_columns].values
 y = final_df[output_columns].values
 
