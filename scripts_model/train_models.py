@@ -107,7 +107,8 @@ def main():
     # -> 여기서 "Joint Angle" 리스트를 펼쳐서 input 컬럼으로 쓰는 구조
     input_cols = ["wire length #0", "wire length #1", "loadcell #0", "loadcell #1"] + \
                  [f"Joint Angle_{i}" for i in range(col_size)]
-    output_cols = ["fx_kalman", "fy_kalman"]
+    output_cols = ["fx", "fy"]
+    # output_cols = ["fx_kalman", "fy_kalman"]
 
     # pre-expand per-file (Joint Angle -> Joint Angle_i)
     expanded_csv_files = []
