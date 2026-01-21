@@ -7,5 +7,6 @@
     "/opt/ros/humble/lib/python3.10/site-packages",
     "/opt/ros/humble/local/lib/python3.10/dist-packages"
   ],
-  "cmake.sourceDirectory": "/home/daeyun/LSTM-force-estimation/src/custom_interfaces"
+  "cmake.sourceDirectory": "/home/daeyun/LSTM-force-estimation/src/custom_interfaces",
+  "ROS2.distro": "humble"
 }
