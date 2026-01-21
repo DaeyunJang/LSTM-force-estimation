@@ -26,74 +26,77 @@ from launch_ros.descriptions import ParameterValue
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
+
 def generate_launch_description():
 
-    estimation_pkg_dir = get_package_share_directory('estimation_pkg')
-    print(f'estimation_pkg_dir={estimation_pkg_dir}')
+    estimation_pkg_dir = get_package_share_directory("estimation_pkg")
+    print(f"estimation_pkg_dir={estimation_pkg_dir}")
 
-    rqt_perspective_file_path = os.path.join(estimation_pkg_dir, 'rqt_setting.perspective')
-    print(f'rqt_perspective_file_path={rqt_perspective_file_path}')
+    rqt_perspective_file_path = os.path.join(
+        estimation_pkg_dir, "rqt_setting.perspective"
+    )
+    print(f"rqt_perspective_file_path={rqt_perspective_file_path}")
     # rqt_command = ['rqt', '-p', rqt_perspective_file_path]
 
-    lstm_model_path = os.path.join(estimation_pkg_dir, 'lstm_model_legacy.h5')
-    scaler_x_path = os.path.join(estimation_pkg_dir, 'scaler_x.pkl')
-    sclaer_y_path = os.path.join(estimation_pkg_dir, 'scaler_y.pkl')
+    lstm_model_path = os.path.join(estimation_pkg_dir, "resnet_model.h5")
+    scaler_x_path = os.path.join(estimation_pkg_dir, "scaler_x.pkl")
+    sclaer_y_path = os.path.join(estimation_pkg_dir, "scaler_y.pkl")
 
-    return LaunchDescription([
-        # ExecuteProcess(
-        #     cmd=rqt_command,
-        #     output='screen'
-        # ),
-        # IncludeLaunchDescription(
-        #     PythonLaunchDescriptionSource(
-        #         [get_package_share_directory('realsense2_camera'), '/launch/rs_launch.py']),
-        #         launch_arguments={
-        #         'rgb_camera.color_profile': '1280,720,30',
-        #         'depth_module.depth_profile': '1280,720,30',
-        #         'rgb_camera.enable_auto_exposure': 'true',
-        #         # 'rgb_camera.profile': '640,480,30',
-        #         # 'depth_module.profile': '640,480,30',
-        #         }.items()
-        # ),
-        Node(
-            package='estimation_pkg',
-            executable='segment_angle_estimator',
-            name='segment_angle_estimator',
-            output='screen',
-            #prefix='taskset -c 2 3'
-        ),
-        Node(
-            package='estimation_pkg',
-            executable='external_force_estimator',
-            name='external_force_estimator',
-            output='screen',
-            parameters=[
-                {'model_path': lstm_model_path},
-                {'scaler_x_path': scaler_x_path},
-                {'scaler_y_path': sclaer_y_path},
-            ]
-            #prefix='taskset -c 2 3'
-        ),
-        
-        # Node(
-        #     package='rqt_gui',
-        #     executable='rqt_gui',
-        #     name='rqt_gui',
-        #     arguments=['--perspective-file', rqt_perspective_file_path],
-        #     output='screen'
-        # ),
-
-        # 10초 후 rqt_gui 실행
-        TimerAction(
-            period=5.0,  # 5초 대기
-            actions=[
-                Node(
-                    package='rqt_gui',
-                    executable='rqt_gui',
-                    name='rqt_gui',
-                    arguments=['--perspective-file', rqt_perspective_file_path],
-                    output='screen'
-                )
-            ]
-        ),
-    ])
+    return LaunchDescription(
+        [
+            # ExecuteProcess(
+            #     cmd=rqt_command,
+            #     output='screen'
+            # ),
+            # IncludeLaunchDescription(
+            #     PythonLaunchDescriptionSource(
+            #         [get_package_share_directory('realsense2_camera'), '/launch/rs_launch.py']),
+            #         launch_arguments={
+            #         'rgb_camera.color_profile': '1280,720,30',
+            #         'depth_module.depth_profile': '1280,720,30',
+            #         'rgb_camera.enable_auto_exposure': 'true',
+            #         # 'rgb_camera.profile': '640,480,30',
+            #         # 'depth_module.profile': '640,480,30',
+            #         }.items()
+            # ),
+            Node(
+                package="estimation_pkg",
+                executable="segment_angle_estimator",
+                name="segment_angle_estimator",
+                output="screen",
+                # prefix='taskset -c 2 3'
+            ),
+            Node(
+                package="estimation_pkg",
+                executable="external_force_estimator",
+                name="external_force_estimator",
+                output="screen",
+                parameters=[
+                    {"model_path": lstm_model_path},
+                    {"scaler_x_path": scaler_x_path},
+                    {"scaler_y_path": sclaer_y_path},
+                ],
+                # prefix='taskset -c 2 3'
+            ),
+            # Node(
+            #     package='rqt_gui',
+            #     executable='rqt_gui',
+            #     name='rqt_gui',
+            #     arguments=['--perspective-file', rqt_perspective_file_path],
+            #     output='screen'
+            # ),
+            # 10초 후 rqt_gui 실행
+            TimerAction(
+                period=5.0,  # 5초 대기
+                actions=[
+                    Node(
+                        package="rqt_gui",
+                        executable="rqt_gui",
+                        name="rqt_gui",
+                        arguments=["--perspective-file", rqt_perspective_file_path],
+                        output="screen",
+                    )
+                ],
+            ),
+        ]
+    )
