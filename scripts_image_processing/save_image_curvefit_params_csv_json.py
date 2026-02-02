@@ -208,7 +208,7 @@ if __name__ == '__main__':
     # df_results = process(dir_path, rbsc)
 
     # define path of directory
-    base_dir = '../data'
+    base_dir = '../data/20260121 외력추정 -30 to 30 deg 데이터셋'
 
     # 이미지 프로세싱 클래스
     rbsc = RBSC()
